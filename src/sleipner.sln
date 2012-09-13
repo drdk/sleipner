@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DR.Sleipner", "DR.Sleipner\DR.Sleipner.csproj", "{A83CDA8A-9BEC-4CB2-99D6-7A7E05BD3AEE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DR.Sleipner.Test", "DR.Sleipner.Test\DR.Sleipner.Test.csproj", "{8B03F1BB-051C-4257-A1C7-C5AE5A5F247D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A83CDA8A-9BEC-4CB2-99D6-7A7E05BD3AEE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A83CDA8A-9BEC-4CB2-99D6-7A7E05BD3AEE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A83CDA8A-9BEC-4CB2-99D6-7A7E05BD3AEE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A83CDA8A-9BEC-4CB2-99D6-7A7E05BD3AEE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8B03F1BB-051C-4257-A1C7-C5AE5A5F247D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8B03F1BB-051C-4257-A1C7-C5AE5A5F247D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8B03F1BB-051C-4257-A1C7-C5AE5A5F247D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8B03F1BB-051C-4257-A1C7-C5AE5A5F247D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
