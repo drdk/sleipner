@@ -42,7 +42,9 @@
   <ItemGroup>
     <Compile Include="CacheProxy.cs" />
     <Compile Include="CacheProxyCore\CacheProxyBase.cs" />
+    <Compile Include="CacheProxyCore\IProxyGenerator.cs" />
     <Compile Include="CacheProxyCore\ProxyTypeMustBeInterfaceException.cs" />
+    <Compile Include="CacheProxyCore\ReflectionEmitProxyGenerator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
