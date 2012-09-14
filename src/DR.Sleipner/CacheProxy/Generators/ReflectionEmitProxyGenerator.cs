@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Text;
+using DR.Sleipner.CacheProviders;
 
-namespace DR.Sleipner.CacheProxyCore
+namespace DR.Sleipner.CacheProxy.Generators
 {
     public class ReflectionEmitProxyGenerator : IProxyGenerator
     {
@@ -30,13 +29,14 @@ namespace DR.Sleipner.CacheProxyCore
             var baseType = typeof(CacheProxyBase<T>);
             var typeBuilder = ModuleBuilder.DefineType(proxyType.FullName + "__Proxy", TypeAttributes.Class | TypeAttributes.Public, baseType, new[] { typeof(T) });
 
-            var cTor = baseType.GetConstructor(new[] { typeof(T) }); //Get the constructor that takes the generic type as it's only parameter.
+            var cTor = baseType.GetConstructor(new[] { typeof(T), typeof(ICacheProvider) }); //Get the constructor that takes the generic type as it's only parameter.
 
             //Create the constructor
-            var cTorBuilder = typeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, new[] { typeof(T) });
+            var cTorBuilder = typeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, new[] { typeof(T), typeof(ICacheProvider) });
             var cTorBody = cTorBuilder.GetILGenerator();
             cTorBody.Emit(OpCodes.Ldarg_0);         //Load this on stack
             cTorBody.Emit(OpCodes.Ldarg_1);         //Load the first parameter of the constructor on stack
+            cTorBody.Emit(OpCodes.Ldarg_2);         //Load the second parameter of the constructor on stack
             cTorBody.Emit(OpCodes.Call, cTor);      //Call base constructor
             cTorBody.Emit(OpCodes.Ret);             //Return
 
@@ -95,11 +95,15 @@ namespace DR.Sleipner.CacheProxyCore
                 methodBody.Emit(OpCodes.Castclass, method.ReturnType);      //Case returned item (since intercept returns object
                 methodBody.Emit(OpCodes.Stloc, cachedItem);                 //Store the result of the method call in a local variable. This also pops it from the stack.
 
-                methodBody.Emit(OpCodes.Ldloc, cachedItem);
+                methodBody.Emit(OpCodes.Ldloc, cachedItem);                 //Load cached item on stack
                 methodBody.Emit(OpCodes.Brfalse, noCacheLabel);             //Check if null is on the stack. If it is go to noCacheLabel
 
                 methodBody.Emit(OpCodes.Ldloc, cachedItem);                 //Load cached item on the stack
                 methodBody.Emit(OpCodes.Ret);                               //Return to caller
+
+                /* Below is the condition where cache returns null.
+                 * Technically we could implement the rest of the logic in the base class - but performance of MethodInfo.Invoke is questionable.
+                 */
 
                 methodBody.MarkLabel(noCacheLabel);                         //noCacheLabelMark. The method needs to call the instance method and get a response
                 methodBody.Emit(OpCodes.Ldarg_0);                           //Load this on the stack
@@ -113,11 +117,15 @@ namespace DR.Sleipner.CacheProxyCore
                 methodBody.Emit(OpCodes.Callvirt, method);                  //Call the method in question on the instance
                 methodBody.Emit(OpCodes.Stloc, cachedItem);                 //And throw the result in a variable
 
+                /* Below we call the storeItemMethod in the base type to move a new item into cache */
+
                 methodBody.Emit(OpCodes.Ldarg_0);                           //Load this on the stack
                 methodBody.Emit(OpCodes.Ldstr, method.Name);                //Load the first parameter value on the stack (name of the method being called)
                 methodBody.Emit(OpCodes.Ldloc, methodParameterArray);       //Load the array of parameters on the stack
                 methodBody.Emit(OpCodes.Ldloc, cachedItem);                 //Load item to cache on stack
                 methodBody.Emit(OpCodes.Callvirt, storeItemMethod);         //Call the storeItem (this is a void method so we don't need to pop the result)
+
+                /* Return the cached item to caller */
 
                 methodBody.Emit(OpCodes.Ldloc, cachedItem);                 //Load the cached item on the stack
                 methodBody.Emit(OpCodes.Ret);                               //Return to caller
