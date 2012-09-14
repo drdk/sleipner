@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using DR.Sleipner.CacheProviders;
+using DR.Sleipner.CacheProxy;
 using Moq;
 using NUnit.Framework;
 
@@ -59,7 +60,7 @@ namespace DR.Sleipner.Test
             var lol = lolMock.Object;
             var cacheProvider = cacheProviderMock.Object;
 
-            //Ok so here we assume a fuckload about the internal implementation... but I think we'll end up doing needless overabstraction to avoid it.
+            //Ok so here we assume how tge internal implementation is made... but I think we'll end up doing needless overabstraction to avoid it. This is not optimal but oh well.
             cacheProviderMock.Setup(a => a.GetItem(lol.GetType(), "AwesomeMethod", first, second, third)).Returns(testObject);
 
             var cachedLol = CacheProxyGenerator.GetProxy(lol, cacheProvider);
@@ -74,7 +75,8 @@ namespace DR.Sleipner.Test
     }
 
     public interface ITestInterface
-    {   
+    {
+        [CacheBehavior(Duration = 60)]
         object AwesomeMethod(string first, int second, object third);
     }
 }

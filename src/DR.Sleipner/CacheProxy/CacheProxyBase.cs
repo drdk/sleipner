@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using DR.Sleipner.CacheProviders;
-using DR.Sleipner.CacheProxyCore;
 
 namespace DR.Sleipner.CacheProxy
 {
@@ -19,6 +18,17 @@ namespace DR.Sleipner.CacheProxy
         public object GetCachedItem(string methodName, object[] parameters)
         {
             var owner = RealInstance.GetType();
+
+            /* This needs to be scrutinized for performance optimization. I don't remember if reflections internally cache all this
+             * but all these are expensive reflections 
+             */
+            var methodInfo = typeof(T).GetMethod(methodName, parameters.Select(a => a.GetType()).ToArray());
+            var cacheAttribute = methodInfo.GetCustomAttributes(typeof(CacheBehaviorAttribute), true).OfType<CacheBehaviorAttribute>().FirstOrDefault();
+            if (cacheAttribute == null)
+            {
+                throw new UnknownCacheBehaviorException();
+            }
+
             var cachedItem = _cacheProvider.GetItem(owner, methodName, parameters);
             return cachedItem;
         }
