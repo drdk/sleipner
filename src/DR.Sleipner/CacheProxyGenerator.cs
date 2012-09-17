@@ -16,7 +16,7 @@ namespace DR.Sleipner
         private static readonly Dictionary<Type, Type> ProxyCache = new Dictionary<Type, Type>();
         private static readonly IProxyGenerator ProxyGenerator = new ReflectionEmitProxyGenerator();
 
-        public static T GetProxy<T>(T realInstance, ICacheProvider cacheProvider) where T : class
+        public static T GetProxy<T>(T realInstance, ICacheProvider<T> cacheProvider) where T : class
         {
             var realType = typeof (T);
             if(!realType.IsInterface)

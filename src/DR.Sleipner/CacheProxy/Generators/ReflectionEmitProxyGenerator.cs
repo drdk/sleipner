@@ -29,10 +29,10 @@ namespace DR.Sleipner.CacheProxy.Generators
             var baseType = typeof(CacheProxyBase<T>);
             var typeBuilder = ModuleBuilder.DefineType(proxyType.FullName + "__Proxy", TypeAttributes.Class | TypeAttributes.Public, baseType, new[] { typeof(T) });
 
-            var cTor = baseType.GetConstructor(new[] { typeof(T), typeof(ICacheProvider) }); //Get the constructor from CacheProxyBase<T>
+            var cTor = baseType.GetConstructor(new[] { typeof(T), typeof(ICacheProvider<T>) }); //Get the constructor from CacheProxyBase<T>
 
             //Create the constructor
-            var cTorBuilder = typeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, new[] { typeof(T), typeof(ICacheProvider) });
+            var cTorBuilder = typeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, new[] { typeof(T), typeof(ICacheProvider<T>) });
             var cTorBody = cTorBuilder.GetILGenerator();
             cTorBody.Emit(OpCodes.Ldarg_0);         //Load this on stack
             cTorBody.Emit(OpCodes.Ldarg_1);         //Load the first parameter of the constructor on stack
@@ -137,6 +137,7 @@ namespace DR.Sleipner.CacheProxy.Generators
 
                 methodBody.Emit(OpCodes.Ldarg_0);                           //Load this on the stack
                 methodBody.Emit(OpCodes.Ldstr, method.Name);                //Load the first parameter value on the stack (name of the method being called)
+                methodBody.Emit(OpCodes.Ldc_I4, cacheBehavior.Duration);    //Load the second (maxAge) parameter value on the stack.
                 methodBody.Emit(OpCodes.Ldloc, methodParameterArray);       //Load the array of parameters on the stack
                 methodBody.Emit(OpCodes.Ldloc, cachedItem);                 //Load item to cache on stack
                 methodBody.Emit(OpCodes.Callvirt, storeItemMethod);         //Call the storeItem (this is a void method so we don't need to pop the result)

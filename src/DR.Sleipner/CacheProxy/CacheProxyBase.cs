@@ -7,9 +7,9 @@ namespace DR.Sleipner.CacheProxy
     public abstract class CacheProxyBase<T> where T : class
     {
         public T RealInstance;
-        private readonly ICacheProvider _cacheProvider;
+        private readonly ICacheProvider<T> _cacheProvider;
 
-        public CacheProxyBase(T real, ICacheProvider cacheProvider)
+        public CacheProxyBase(T real, ICacheProvider<T> cacheProvider)
         {
             RealInstance = real;
             _cacheProvider = cacheProvider;
@@ -17,16 +17,13 @@ namespace DR.Sleipner.CacheProxy
 
         public object GetCachedItem(string methodName, int maxAge, object[] parameters)
         {
-            var owner = RealInstance.GetType();
-
-            var cachedItem = _cacheProvider.GetItem(owner, methodName, parameters);
+            var cachedItem = _cacheProvider.GetItem(methodName, maxAge, parameters);
             return cachedItem;
         }
 
-        public void StoreItem(string methodName, object[] parameters, object item)
+        public void StoreItem(string methodName, int maxAge, object[] parameters, object item)
         {
-            var owner = RealInstance.GetType();
-            _cacheProvider.StoreItem(owner, methodName, item, parameters);
+            _cacheProvider.StoreItem(methodName, maxAge, item, parameters);
         }
     }
 }

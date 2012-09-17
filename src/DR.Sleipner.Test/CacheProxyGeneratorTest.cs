@@ -27,11 +27,11 @@ namespace DR.Sleipner.Test
             var lolMock = new Mock<ITestInterface>();
             lolMock.Setup(a => a.AwesomeMethod(first, second, third)).Returns(testObject);
 
-            var cacheProviderMock = new Mock<ICacheProvider>();
+            var cacheProviderMock = new Mock<ICacheProvider<ITestInterface>>();
 
             var lol = lolMock.Object;
             var cacheProvider = cacheProviderMock.Object;
-
+            
             var cachedLol = CacheProxyGenerator.GetProxy(lol, cacheProvider);
             var result = cachedLol.AwesomeMethod(first, second, third);
 
@@ -55,13 +55,13 @@ namespace DR.Sleipner.Test
             };
 
             var lolMock = new Mock<ITestInterface>();
-            var cacheProviderMock = new Mock<ICacheProvider>();
+            var cacheProviderMock = new Mock<ICacheProvider<ITestInterface>>();
             
             var lol = lolMock.Object;
             var cacheProvider = cacheProviderMock.Object;
 
             //Ok so here we assume how tge internal implementation is made... but I think we'll end up doing needless overabstraction to avoid it. This is not optimal but oh well.
-            cacheProviderMock.Setup(a => a.GetItem(lol.GetType(), "AwesomeMethod", first, second, third)).Returns(testObject);
+            cacheProviderMock.Setup(a => a.GetItem("AwesomeMethod", 30, first, second, third)).Returns(testObject);
 
             var cachedLol = CacheProxyGenerator.GetProxy(lol, cacheProvider);
             var result = cachedLol.AwesomeMethod(first, second, third);
@@ -76,7 +76,7 @@ namespace DR.Sleipner.Test
 
     public interface ITestInterface
     {
-        [CacheBehavior(Duration = 60)]
+        [CacheBehavior(Duration = 30)]
         object AwesomeMethod(string first, int second, object third);
     }
 }
