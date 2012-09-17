@@ -29,7 +29,7 @@ namespace DR.Sleipner.CacheProxy.Generators
             var baseType = typeof(CacheProxyBase<T>);
             var typeBuilder = ModuleBuilder.DefineType(proxyType.FullName + "__Proxy", TypeAttributes.Class | TypeAttributes.Public, baseType, new[] { typeof(T) });
 
-            var cTor = baseType.GetConstructor(new[] { typeof(T), typeof(ICacheProvider) }); //Get the constructor that takes the generic type as it's only parameter.
+            var cTor = baseType.GetConstructor(new[] { typeof(T), typeof(ICacheProvider) }); //Get the constructor from CacheProxyBase<T>
 
             //Create the constructor
             var cTorBuilder = typeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, new[] { typeof(T), typeof(ICacheProvider) });
@@ -49,8 +49,12 @@ namespace DR.Sleipner.CacheProxy.Generators
                 var parameterTypes = method.GetParameters().Select(a => a.ParameterType).ToArray();
                 var proxyMethod = typeBuilder.DefineMethod(method.Name, MethodAttributes.Public | MethodAttributes.Virtual, CallingConventions.HasThis, method.ReturnType, parameterTypes);
                 var methodBody = proxyMethod.GetILGenerator();
+                var cacheBehavior = GetCacheBehavior(method);
 
-                if (method.ReturnType == typeof(void))
+                /* This below code creates a pass through proxy method that does nothing. It just forwards everything to real instance.
+                 * This is used for void method and method that do no define a cachebehavior */
+
+                if (method.ReturnType == typeof(void) || cacheBehavior == null) //If a method is void or does not specify a caching behavior it just passes through directly to realInstance (we can't cache void output)
                 {
                     methodBody.Emit(OpCodes.Ldarg_0);                           //Load this on the stack
                     methodBody.Emit(OpCodes.Ldfld, realInstanceField);          //Load the real instance on the stack
@@ -60,11 +64,14 @@ namespace DR.Sleipner.CacheProxy.Generators
                     }
 
                     methodBody.Emit(OpCodes.Callvirt, method);                  //Call the method in question on the instance
-                    methodBody.Emit(OpCodes.Ret);                               //Load this on the stack
+                    methodBody.Emit(OpCodes.Ret);                               //Return to caller.
 
                     continue;
                 }
 
+                /* The below code creates an array that contains all the values
+                 * that were passed into the method we're proxying.
+                 */
                 var methodParameterArray = methodBody.DeclareLocal(typeof(object[]));
                 var cachedItem = methodBody.DeclareLocal(method.ReturnType);
                 var noCacheLabel = methodBody.DefineLabel();
@@ -82,17 +89,26 @@ namespace DR.Sleipner.CacheProxy.Generators
 
                     if (parameterType.IsValueType)
                     {
-                        methodBody.Emit(OpCodes.Box, parameterType);        //Value types need to be boxed into their type
+                        methodBody.Emit(OpCodes.Box, parameterType);        //Value types need to be boxed
                     }
 
                     methodBody.Emit(OpCodes.Stelem_Ref);                    //Store element in array
                 }
 
+                /* This generates a method call to GetCachedItem in the base class.
+                 * If this method returns != null it should return the value to caller as is.
+                 * 
+                 * If it is not it needs to call the same method on RealInstance and then:
+                 * 1) Call StoreItem in Baseclass
+                 * 2) Return value to caller
+                 */
+
                 methodBody.Emit(OpCodes.Ldarg_0);                           //Load this on the stack
                 methodBody.Emit(OpCodes.Ldstr, method.Name);                //Load the first parameter value on the stack (name of the method being called)
+                methodBody.Emit(OpCodes.Ldc_I4, cacheBehavior.Duration);    //Load the second (maxAge) parameter value on the stack.
                 methodBody.Emit(OpCodes.Ldloc, methodParameterArray);       //Load the array on the stack
                 methodBody.Emit(OpCodes.Callvirt, getCachedItemMethod);     //Call the interceptMethod
-                methodBody.Emit(OpCodes.Castclass, method.ReturnType);      //Case returned item (since intercept returns object
+                methodBody.Emit(OpCodes.Castclass, method.ReturnType);      //Cast returned item (since intercept returns object)
                 methodBody.Emit(OpCodes.Stloc, cachedItem);                 //Store the result of the method call in a local variable. This also pops it from the stack.
 
                 methodBody.Emit(OpCodes.Ldloc, cachedItem);                 //Load cached item on stack
@@ -115,7 +131,7 @@ namespace DR.Sleipner.CacheProxy.Generators
                 }
 
                 methodBody.Emit(OpCodes.Callvirt, method);                  //Call the method in question on the instance
-                methodBody.Emit(OpCodes.Stloc, cachedItem);                 //And throw the result in a variable
+                methodBody.Emit(OpCodes.Stloc, cachedItem);                 //And store result in a local variable
 
                 /* Below we call the storeItemMethod in the base type to move a new item into cache */
 
@@ -140,6 +156,12 @@ namespace DR.Sleipner.CacheProxy.Generators
             #endif
             
             return createdType;
+        }
+
+        private CacheBehaviorAttribute GetCacheBehavior(MethodInfo methodInfo)
+        {
+            var cacheAttribute = methodInfo.GetCustomAttributes(typeof(CacheBehaviorAttribute), true).OfType<CacheBehaviorAttribute>().FirstOrDefault();
+            return cacheAttribute;
         }
     }
 }
