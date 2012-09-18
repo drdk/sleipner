@@ -40,9 +40,9 @@ namespace DR.Sleipner.CacheProxy.Generators
             cTorBody.Emit(OpCodes.Call, cTor);      //Call base constructor
             cTorBody.Emit(OpCodes.Ret);             //Return
 
-            var getCachedItemMethod = baseType.GetMethod("GetCachedItem");
-            var storeItemMethod = baseType.GetMethod("StoreItem");
             var realInstanceField = baseType.GetField("RealInstance");
+            var proxyCallMethod = baseType.GetMethod("ProxyCall");
+            
 
             foreach (var method in proxyType.GetMethods()) //We guarantee internally that this is the methods of an interface. The compiler will gurantee that these are all the methods that needs proxying.
             {
@@ -74,11 +74,10 @@ namespace DR.Sleipner.CacheProxy.Generators
                  */
                 var methodParameterArray = methodBody.DeclareLocal(typeof(object[]));
                 var cachedItem = methodBody.DeclareLocal(method.ReturnType);
-                var noCacheLabel = methodBody.DefineLabel();
 
                 methodBody.Emit(OpCodes.Ldc_I4, parameterTypes.Length);     //Push array size on stack
                 methodBody.Emit(OpCodes.Newarr, typeof(object));            //Create array
-                methodBody.Emit(OpCodes.Stloc, methodParameterArray);       //Store array in arr
+                methodBody.Emit(OpCodes.Stloc, methodParameterArray);       //Store array in local variable
 
                 for (var i = 0; i < parameterTypes.Length; i++)             //Load all parameters on the stack
                 {
@@ -95,56 +94,15 @@ namespace DR.Sleipner.CacheProxy.Generators
                     methodBody.Emit(OpCodes.Stelem_Ref);                    //Store element in array
                 }
 
-                /* This generates a method call to GetCachedItem in the base class.
-                 * If this method returns != null it should return the value to caller as is.
-                 * 
-                 * If it is not it needs to call the same method on RealInstance and then:
-                 * 1) Call StoreItem in Baseclass
-                 * 2) Return value to caller
-                 */
+                /* This generates a method call to ProxyCall in the base class. */
 
                 methodBody.Emit(OpCodes.Ldarg_0);                           //Load this on the stack
                 methodBody.Emit(OpCodes.Ldstr, method.Name);                //Load the first parameter value on the stack (name of the method being called)
-                methodBody.Emit(OpCodes.Ldc_I4, cacheBehavior.Duration);    //Load the second (maxAge) parameter value on the stack.
                 methodBody.Emit(OpCodes.Ldloc, methodParameterArray);       //Load the array on the stack
-                methodBody.Emit(OpCodes.Callvirt, getCachedItemMethod);     //Call the interceptMethod
+                methodBody.Emit(OpCodes.Callvirt, proxyCallMethod);         //Call the interceptMethod
                 methodBody.Emit(OpCodes.Castclass, method.ReturnType);      //Cast returned item (since intercept returns object)
                 methodBody.Emit(OpCodes.Stloc, cachedItem);                 //Store the result of the method call in a local variable. This also pops it from the stack.
-
-                methodBody.Emit(OpCodes.Ldloc, cachedItem);                 //Load cached item on stack
-                methodBody.Emit(OpCodes.Brfalse, noCacheLabel);             //Check if null is on the stack. If it is go to noCacheLabel
-
                 methodBody.Emit(OpCodes.Ldloc, cachedItem);                 //Load cached item on the stack
-                methodBody.Emit(OpCodes.Ret);                               //Return to caller
-
-                /* Below is the condition where cache returns null.
-                 * Technically we could implement the rest of the logic in the base class - but performance of MethodInfo.Invoke is questionable.
-                 */
-
-                methodBody.MarkLabel(noCacheLabel);                         //noCacheLabelMark. The method needs to call the instance method and get a response
-                methodBody.Emit(OpCodes.Ldarg_0);                           //Load this on the stack
-                methodBody.Emit(OpCodes.Ldfld, realInstanceField);          //Load the real instance on the stack
-
-                for (var i = 0; i < parameterTypes.Length; i++)             //Load all parameters on the stack
-                {
-                    methodBody.Emit(OpCodes.Ldarg, i + 1);                  //Method parameter on stack
-                }
-
-                methodBody.Emit(OpCodes.Callvirt, method);                  //Call the method in question on the instance
-                methodBody.Emit(OpCodes.Stloc, cachedItem);                 //And store result in a local variable
-
-                /* Below we call the storeItemMethod in the base type to move a new item into cache */
-
-                methodBody.Emit(OpCodes.Ldarg_0);                           //Load this on the stack
-                methodBody.Emit(OpCodes.Ldstr, method.Name);                //Load the first parameter value on the stack (name of the method being called)
-                methodBody.Emit(OpCodes.Ldc_I4, cacheBehavior.Duration);    //Load the second (maxAge) parameter value on the stack.
-                methodBody.Emit(OpCodes.Ldloc, methodParameterArray);       //Load the array of parameters on the stack
-                methodBody.Emit(OpCodes.Ldloc, cachedItem);                 //Load item to cache on stack
-                methodBody.Emit(OpCodes.Callvirt, storeItemMethod);         //Call the storeItem (this is a void method so we don't need to pop the result)
-
-                /* Return the cached item to caller */
-
-                methodBody.Emit(OpCodes.Ldloc, cachedItem);                 //Load the cached item on the stack
                 methodBody.Emit(OpCodes.Ret);                               //Return to caller
 
                 typeBuilder.DefineMethodOverride(proxyMethod, method);

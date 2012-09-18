@@ -16,18 +16,14 @@ namespace DR.Sleipner.CacheProxy
             _cacheProvider = cacheProvider;
         }
 
-        public object GetCachedItem(string methodName, int maxAge, object[] parameters)
+        public object ProxyCall(string methodName, object[] parameters)
         {
+            //Cache these two lines perhaps?
             var methodInfo = typeof (T).GetMethod(methodName, parameters.Select(a => a.GetType()).ToArray());
             var delegateMethod = DelegateFactory.Create(methodInfo);
 
-            var cachedItem = _cacheProvider.GetItem(methodName, maxAge, parameters);
+            var cachedItem = _cacheProvider.GetItem(methodName, 10, parameters);
             return cachedItem;
-        }
-
-        public void StoreItem(string methodName, int maxAge, object[] parameters, object item)
-        {
-            _cacheProvider.StoreItem(methodName, maxAge, item, parameters);
         }
     }
 }
