@@ -47,6 +47,7 @@
     <Compile Include="CacheProxyGenerator.cs" />
     <Compile Include="CacheProxy\CacheBehaviorAttribute.cs" />
     <Compile Include="CacheProxy\CacheProxyBase.cs" />
+    <Compile Include="CacheProxy\DelegateFactory.cs" />
     <Compile Include="CacheProxy\IProxyGenerator.cs" />
     <Compile Include="CacheProxy\ProxyInterfaceDoesNotUseCacheBehaviorAttributeException.cs" />
     <Compile Include="ProxyTypeMustBeInterfaceException.cs" />

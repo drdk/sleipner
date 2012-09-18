@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Linq.Expressions;
 using DR.Sleipner.CacheProviders;
 
 namespace DR.Sleipner.CacheProxy
@@ -17,6 +18,9 @@ namespace DR.Sleipner.CacheProxy
 
         public object GetCachedItem(string methodName, int maxAge, object[] parameters)
         {
+            var methodInfo = typeof (T).GetMethod(methodName, parameters.Select(a => a.GetType()).ToArray());
+            var delegateMethod = DelegateFactory.Create(methodInfo);
+
             var cachedItem = _cacheProvider.GetItem(methodName, maxAge, parameters);
             return cachedItem;
         }
