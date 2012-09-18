@@ -40,8 +40,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CacheProviders\DictionaryCache\CachedObject.cs" />
-    <Compile Include="CacheProviders\DictionaryCache\CacheKey.cs" />
+    <Compile Include="CacheProviders\DictionaryCache\DictionaryCachedItem.cs" />
+    <Compile Include="CacheProviders\DictionaryCache\DictionaryCacheKey.cs" />
     <Compile Include="CacheProviders\DictionaryCache\DictionaryCache.cs" />
     <Compile Include="CacheProviders\ICacheProvider.cs" />
     <Compile Include="CacheProxyGenerator.cs" />

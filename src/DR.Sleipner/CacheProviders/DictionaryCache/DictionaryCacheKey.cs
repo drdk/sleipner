@@ -5,11 +5,11 @@ using System.Text;
 
 namespace DR.Sleipner.CacheProviders.DictionaryCache
 {
-    public class CacheKey
+    public class DictionaryCacheKey
     {
         private readonly object _primaryKey;
         private readonly object[] _cacheKeys;
-        public CacheKey(object primaryKey, object[] cacheKeys)
+        public DictionaryCacheKey(object primaryKey, object[] cacheKeys)
         {
             _primaryKey = primaryKey;
             _cacheKeys = cacheKeys;
@@ -24,12 +24,12 @@ namespace DR.Sleipner.CacheProviders.DictionaryCache
             }
 
             // If parameter cannot be cast to this type return false.
-            var otherKey = obj as CacheKey;
+            var otherKey = obj as DictionaryCacheKey;
 
             return Equals(otherKey);
         }
 
-        public bool Equals(CacheKey other)
+        public bool Equals(DictionaryCacheKey other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;

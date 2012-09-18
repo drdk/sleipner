@@ -49,5 +49,6 @@ namespace DR.Sleipner.Test
     public interface IDummyInterface
     {
         void Method();
+        object GetProgramCards(string bundleName, DateTime since);
     }
 }

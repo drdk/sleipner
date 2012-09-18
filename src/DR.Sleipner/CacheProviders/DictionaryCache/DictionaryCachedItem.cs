@@ -5,7 +5,7 @@ using System.Text;
 
 namespace DR.Sleipner.CacheProviders.DictionaryCache
 {
-    public class CachedObject
+    public class DictionaryCachedItem
     {
         public readonly object Object;
         public readonly DateTime Created;
@@ -16,7 +16,7 @@ namespace DR.Sleipner.CacheProviders.DictionaryCache
             get { return Created + Duration < DateTime.Now; }
         }
 
-        public CachedObject(object obj, TimeSpan duration)
+        public DictionaryCachedItem(object obj, TimeSpan duration)
         {
             Object = obj;
             Created = DateTime.Now;
