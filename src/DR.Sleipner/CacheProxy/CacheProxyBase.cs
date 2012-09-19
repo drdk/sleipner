@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 using DR.Sleipner.CacheProviders;
 
 namespace DR.Sleipner.CacheProxy
@@ -18,12 +19,51 @@ namespace DR.Sleipner.CacheProxy
 
         public object ProxyCall(string methodName, object[] parameters)
         {
-            //Cache these two lines perhaps?
-            var methodInfo = typeof (T).GetMethod(methodName, parameters.Select(a => a.GetType()).ToArray());
-            var delegateMethod = DelegateFactory.Create(methodInfo);
+            var methodInfo = RealInstance.GetType().GetMethod(methodName, parameters.Select(a => a.GetType()).ToArray());
+            var cachedItem = _cacheProvider.GetItem(methodInfo, parameters);
 
-            var cachedItem = _cacheProvider.GetItem(methodName, 10, parameters);
-            return cachedItem;
+            if(cachedItem.State == CachedObjectState.Exception)
+            {
+                throw cachedItem.ThrownException;
+            }
+
+            if(cachedItem.State == CachedObjectState.Fresh)
+            {
+                return cachedItem.Object;
+            }
+
+            var delegateMethod = DelegateFactory.Create(methodInfo);
+            if(cachedItem.State == CachedObjectState.Stale)
+            {
+                var task = new Task<object>(() => delegateMethod(RealInstance, parameters));
+                task.ContinueWith(taskState =>
+                                      {
+                                          if (taskState.Exception != null)
+                                          {
+                                              _cacheProvider.StoreItem(methodInfo, taskState.Exception, parameters);
+                                          }
+                                          else
+                                          {
+                                              _cacheProvider.StoreItem(methodInfo, taskState.Result, parameters);
+                                          }
+                                      });
+                task.Start();
+                return cachedItem.Object;
+            }
+
+            //At this point nothing is in the cache.
+            object realInstanceResult;
+            try
+            {
+                realInstanceResult = delegateMethod(RealInstance, parameters);
+            }
+            catch(Exception e)
+            {
+                _cacheProvider.StoreItem(methodInfo, e, parameters);
+                throw;
+            }
+            
+            return realInstanceResult;
         }
     }
 }

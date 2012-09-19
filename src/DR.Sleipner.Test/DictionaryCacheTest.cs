@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using DR.Sleipner.CacheProviders;
 using DR.Sleipner.CacheProviders.DictionaryCache;
+using DR.Sleipner.CacheProxy;
 using NUnit.Framework;
 
 namespace DR.Sleipner.Test
@@ -16,39 +17,39 @@ namespace DR.Sleipner.Test
         public void TestReturnsCachedItemWithinPeriod()
         {
             ICacheProvider<IDummyInterface> cache = new DictionaryCache<IDummyInterface>();
+            var methodInfo = typeof(IDummyInterface).GetMethod("GetProgramCards");
 
-            var methodName = "metodenavn";
-            var maxAge = 10;
             object[] parameters = new [] {"", "1"};
             var val = new object();
 
-            cache.StoreItem(methodName, maxAge, val, parameters);
-            var returnedValue = cache.GetItem(methodName, maxAge, parameters);
+            cache.StoreItem(methodInfo, val, parameters);
+            var returnedValue = cache.GetItem(methodInfo, parameters);
 
-            Assert.AreEqual(val, returnedValue);
+            Assert.AreEqual(val, returnedValue.Object);
         }
 
         [Test]
-        public void TestReturnsNullOutsidePeriod()
+        public void TestReturnsStaleOutsidePeriod()
         {
             ICacheProvider<IDummyInterface> cache = new DictionaryCache<IDummyInterface>();
+            var methodInfo = typeof(IDummyInterface).GetMethod("GetProgramCards");
 
-            var methodName = "metodenavn";
-            var maxAge = 2;
             object[] parameters = new[] { "", "1" };
             var val = new object();
 
-            cache.StoreItem(methodName, maxAge, val, parameters);
-            Thread.Sleep(maxAge*1000 + 100);
-            var returnedValue = cache.GetItem(methodName, maxAge, parameters);
+            cache.StoreItem(methodInfo, val, parameters);
+            Thread.Sleep(2000 + 100);
+            var returnedValue = cache.GetItem(methodInfo, parameters);
 
-            Assert.AreEqual(null, returnedValue);
+            Assert.IsTrue(returnedValue.State == CachedObjectState.Stale);
         }
     }
 
     public interface IDummyInterface
     {
         void Method();
+
+        [CacheBehavior(Duration = 2)]
         object GetProgramCards(string bundleName, DateTime since);
     }
 }
