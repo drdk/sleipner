@@ -47,7 +47,7 @@ namespace DR.Sleipner.CacheProxy
                                       {
                                           if (taskState.Exception != null)
                                           {
-                                              _cacheProvider.StoreItem(methodInfo, taskState.Exception, parameters);
+                                              _cacheProvider.StoreItem(methodInfo, taskState.Exception.InnerException ?? new Exception("Unknown exception was thrown by aggregateException"), parameters);
                                           }
                                           else
                                           {

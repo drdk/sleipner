@@ -193,5 +193,55 @@ namespace DR.Sleipner.Test
             interfaceMock.Verify(a => a.ParameteredMethod(first, second), Times.Once());
             cacheProviderMock.Verify(a => a.StoreItem(methodInfo, testObject, first, second));
         }
+
+        [Test]
+        [ExpectedException(typeof(AwesomeException))]
+        public void TestExceptionHandling()
+        {
+            const string first = "a";
+            const int second = 1;
+
+            var testObject = Enumerable.Empty<string>();
+
+            var interfaceMock = new Mock<IAwesomeInterface>();
+            interfaceMock.Setup(a => a.ParameteredMethod(first, second)).Throws<AwesomeException>();
+
+            var repository = interfaceMock.Object;
+            var methodInfo = repository.GetType().GetMethod("ParameteredMethod");
+
+            var cacheProviderMock = new Mock<ICacheProvider<IAwesomeInterface>>();
+
+            var cacheProvider = cacheProviderMock.Object;
+
+            var cachedRepository = CacheProxyGenerator.GetProxy(repository, cacheProvider);
+            var result = cachedRepository.ParameteredMethod(first, second); //This raises exception
+        }
+
+        [Test]
+        public void TestStaleUpdateExceptionTest()
+        {
+            const string first = "a";
+            const int second = 1;
+
+            var testObject = Enumerable.Empty<string>();
+            var exception = new AwesomeException();
+
+            var interfaceMock = new Mock<IAwesomeInterface>();
+            interfaceMock.Setup(a => a.ParameteredMethod(first, second)).Throws(exception);
+
+            var repository = interfaceMock.Object;
+            var methodInfo = repository.GetType().GetMethod("ParameteredMethod");
+
+            var cacheProviderMock = new Mock<ICacheProvider<IAwesomeInterface>>();
+            cacheProviderMock.Setup(a => a.GetItem(methodInfo, first, second)).Returns(new CachedObject(CachedObjectState.Stale, testObject));
+
+            var cacheProvider = cacheProviderMock.Object;
+            var cachedRepository = CacheProxyGenerator.GetProxy(repository, cacheProvider);
+            var result = cachedRepository.ParameteredMethod(first, second); //This raises exception
+            Assert.AreSame(result, testObject);
+            Thread.Sleep(1000);
+            //Verify that proxy stores the exception raied by interfaceMock
+            cacheProviderMock.Verify(a => a.StoreItem(methodInfo, exception, first, second), Times.Once());
+        }
     }
 }
