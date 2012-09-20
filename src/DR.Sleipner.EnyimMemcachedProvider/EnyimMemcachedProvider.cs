@@ -21,7 +21,7 @@ namespace DR.Sleipner.EnyimMemcachedProvider
             _client = client;
         }
 
-        public CachedObject GetItem(MethodInfo method, params object[] parameters)
+        public CachedObject<TObject> GetItem<TObject>(MethodInfo method, params object[] parameters)
         {
             var key = GenerateStringKey(method, parameters);
             var cacheBehavior = GetCacheBehavior(method);
@@ -29,25 +29,25 @@ namespace DR.Sleipner.EnyimMemcachedProvider
             object value;
             if (_client.TryGet(key, out value))
             {
-                var cachedObject = (MemcachedObject) value;
+                var cachedObject = (MemcachedObject<TObject>) value;
                 if(cachedObject.IsException && cachedObject.Created.AddSeconds(2) < DateTime.Now)
                 {
-                    return new CachedObject(CachedObjectState.Exception, new Exception("Exception stored in memcached"));
+                    return new CachedObject<TObject>(CachedObjectState.Exception, new Exception("Exception stored in memcached"));
                 }
                 if(!cachedObject.IsException)
                 {
                     var stale = cachedObject.Created.AddSeconds(cacheBehavior.Duration) < DateTime.Now;
-                    return new CachedObject(stale ? CachedObjectState.Stale : CachedObjectState.Fresh, cachedObject.Object);
+                    return new CachedObject<TObject>(stale ? CachedObjectState.Stale : CachedObjectState.Fresh, cachedObject.Object);
                 }
             }
-            
-            return new CachedObject(CachedObjectState.None, value);
+
+            return new CachedObject<TObject>(CachedObjectState.None, (TObject)value);
         }
 
-        public void StoreItem(MethodInfo method, object item, params object[] parameters)
+        public void StoreItem<TObject>(MethodInfo method, TObject item, params object[] parameters)
         {
             var key = GenerateStringKey(method, parameters);
-            var cachedObject = new MemcachedObject()
+            var cachedObject = new MemcachedObject<TObject>()
                                    {
                                        Created = DateTime.Now,
                                        Object = item
@@ -59,7 +59,7 @@ namespace DR.Sleipner.EnyimMemcachedProvider
         public void StoreItem(MethodInfo method, Exception exception, params object[] parameters)
         {
             var key = GenerateStringKey(method, parameters);
-            var cachedObject = new MemcachedObject()
+            var cachedObject = new MemcachedObject<object>()
             {
                 Created = DateTime.Now,
                 IsException = true,

@@ -12,7 +12,7 @@ namespace DR.Sleipner.CacheProviders.DictionaryCache
     {
         private readonly IDictionary<DictionaryCacheKey, DictionaryCachedItem> _cache = new ConcurrentDictionary<DictionaryCacheKey, DictionaryCachedItem>();
 
-        public CachedObject GetItem(MethodInfo methodInfo, params object[] parameters)
+        public CachedObject<TObject> GetItem<TObject>(MethodInfo methodInfo, params object[] parameters)
         {
             var cacheKey = new DictionaryCacheKey(methodInfo.Name, parameters);
             if(_cache.ContainsKey(cacheKey))
@@ -21,16 +21,16 @@ namespace DR.Sleipner.CacheProviders.DictionaryCache
 
                 if(cachedObject.ThrownException != null)
                 {
-                    return new CachedObject(CachedObjectState.Exception, cachedObject.ThrownException);
+                    return new CachedObject<TObject>(CachedObjectState.Exception, cachedObject.ThrownException);
                 }
 
-                return new CachedObject(cachedObject.IsExpired ? CachedObjectState.Stale : CachedObjectState.Fresh, cachedObject.Object);
+                return new CachedObject<TObject>(cachedObject.IsExpired ? CachedObjectState.Stale : CachedObjectState.Fresh, (TObject)cachedObject.Object);
             }
 
-            return new CachedObject(CachedObjectState.None, null);
+            return new CachedObject<TObject>(CachedObjectState.None, null);
         }
 
-        public void StoreItem(MethodInfo methodInfo, object item, params object[] parameters)
+        public void StoreItem<TObject>(MethodInfo methodInfo, TObject item, params object[] parameters)
         {
             var cacheDuration = GetCacheBehavior(methodInfo);
 

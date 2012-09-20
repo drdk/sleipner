@@ -43,7 +43,6 @@ namespace DR.Sleipner.CacheProxy.Generators
             var realInstanceField = baseType.GetField("RealInstance");
             var proxyCallMethod = baseType.GetMethod("ProxyCall");
             
-
             foreach (var method in proxyType.GetMethods()) //We guarantee internally that this is the methods of an interface. The compiler will gurantee that these are all the methods that needs proxying.
             {
                 var parameterTypes = method.GetParameters().Select(a => a.ParameterType).ToArray();
@@ -99,8 +98,8 @@ namespace DR.Sleipner.CacheProxy.Generators
                 methodBody.Emit(OpCodes.Ldarg_0);                           //Load this on the stack
                 methodBody.Emit(OpCodes.Ldstr, method.Name);                //Load the first parameter value on the stack (name of the method being called)
                 methodBody.Emit(OpCodes.Ldloc, methodParameterArray);       //Load the array on the stack
-                methodBody.Emit(OpCodes.Callvirt, proxyCallMethod);         //Call the interceptMethod
-                methodBody.Emit(OpCodes.Castclass, method.ReturnType);      //Cast returned item (since intercept returns object)
+                methodBody.Emit(OpCodes.Callvirt, proxyCallMethod.MakeGenericMethod(new []{method.ReturnType}));         //Call the interceptMethod
+                //methodBody.Emit(OpCodes.Castclass, method.ReturnType);      //Cast returned item (since intercept returns object)
                 methodBody.Emit(OpCodes.Stloc, cachedItem);                 //Store the result of the method call in a local variable. This also pops it from the stack.
                 methodBody.Emit(OpCodes.Ldloc, cachedItem);                 //Load cached item on the stack
                 methodBody.Emit(OpCodes.Ret);                               //Return to caller

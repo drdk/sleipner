@@ -18,15 +18,15 @@ namespace DR.Sleipner.CacheProxy
             _cacheProvider = cacheProvider;
         }
 
-        public object ProxyCall(string methodName, object[] parameters)
+        public TResult ProxyCall<TResult>(string methodName, object[] parameters)
         {
             var methodInfo = RealInstance.GetType().GetMethod(methodName, parameters.Select(a => a.GetType()).ToArray());
-            var cachedItem = _cacheProvider.GetItem(methodInfo, parameters);
+            var cachedItem = _cacheProvider.GetItem<TResult>(methodInfo, parameters);
 
             if(cachedItem == null)
             {
                 //If the provider returns null we're going to assume that it means it doesn't have this in cache.
-                cachedItem = new CachedObject(CachedObjectState.None, null);
+                cachedItem = new CachedObject<TResult>(CachedObjectState.None, null);
             }
 
             if(cachedItem.State == CachedObjectState.Exception)
@@ -42,12 +42,12 @@ namespace DR.Sleipner.CacheProxy
             var delegateMethod = DelegateFactory.Create(methodInfo);
             if(cachedItem.State == CachedObjectState.Stale)
             {
-                var task = new Task<object>(() => delegateMethod(RealInstance, parameters));
+                var task = new Task<TResult>(() => (TResult)delegateMethod(RealInstance, parameters));
                 task.ContinueWith(taskState =>
                                       {
                                           if (taskState.Exception != null)
                                           {
-                                              _cacheProvider.StoreItem(methodInfo, taskState.Exception.InnerException ?? new Exception("Unknown exception was thrown by aggregateException"), parameters);
+                                              _cacheProvider.StoreItem(methodInfo, taskState.Exception.InnerException, parameters);
                                           }
                                           else
                                           {
@@ -59,10 +59,10 @@ namespace DR.Sleipner.CacheProxy
             }
 
             //At this point nothing is in the cache.
-            object realInstanceResult;
+            TResult realInstanceResult;
             try
             {
-                realInstanceResult = delegateMethod(RealInstance, parameters);
+                realInstanceResult = (TResult)delegateMethod(RealInstance, parameters);
                 _cacheProvider.StoreItem(methodInfo, realInstanceResult, parameters);
             }
             catch(Exception e)

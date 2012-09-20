@@ -11,8 +11,8 @@ namespace DR.Sleipner.CacheProviders
 {
     public interface ICacheProvider<T> where T : class
     {
-        CachedObject GetItem(MethodInfo method, params object[] parameters);
-        void StoreItem(MethodInfo method, object item, params object[] parameters);
+        CachedObject<TObject> GetItem<TObject>(MethodInfo method, params object[] parameters);
+        void StoreItem<TObject>(MethodInfo method, TObject item, params object[] parameters);
         void StoreItem(MethodInfo method, Exception exception, params object[] parameters);
 
         void Purge(Expression<Action<T>> action);

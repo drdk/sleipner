@@ -21,5 +21,11 @@ namespace DR.Sleipner.Test.TestModel
 
         [CacheBehavior(Duration = 10)]
         IEnumerable<string> ParameteredMethod(string a, int b);
+
+        [CacheBehavior(Duration = 10)]
+        object LolMethod();
+
+        [CacheBehavior(Duration = 10)]
+        int RoflMethod();
     }
 }

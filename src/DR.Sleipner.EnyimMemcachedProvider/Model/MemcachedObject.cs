@@ -5,9 +5,9 @@ using System.Text;
 
 namespace DR.Sleipner.EnyimMemcachedProvider.Model
 {
-    public class MemcachedObject
+    public class MemcachedObject<TObject>
     {
-        public object Object;
+        public TObject Object;
         public bool IsException;
         public DateTime Created;
     }

@@ -21,10 +21,10 @@ namespace DR.Sleipner.Test
             var methodInfo = typeof(IDummyInterface).GetMethod("GetProgramCards");
 
             object[] parameters = new [] {"", "1"};
-            var val = new object();
+            var val = Enumerable.Empty<object>();
 
             cache.StoreItem(methodInfo, val, parameters);
-            var returnedValue = cache.GetItem(methodInfo, parameters);
+            var returnedValue = cache.GetItem<IEnumerable<object>>(methodInfo, parameters);
 
             Assert.AreEqual(val, returnedValue.Object);
         }
@@ -36,11 +36,11 @@ namespace DR.Sleipner.Test
             var methodInfo = typeof(IDummyInterface).GetMethod("GetProgramCards");
 
             object[] parameters = new[] { "", "1" };
-            var val = new object();
+            var val = Enumerable.Empty<object>();
 
             cache.StoreItem(methodInfo, val, parameters);
             Thread.Sleep(2000 + 100);
-            var returnedValue = cache.GetItem(methodInfo, parameters);
+            var returnedValue = cache.GetItem<IEnumerable<object>>(methodInfo, parameters);
 
             Assert.IsTrue(returnedValue.State == CachedObjectState.Stale);
         }
@@ -51,6 +51,6 @@ namespace DR.Sleipner.Test
         void Method();
 
         [CacheBehavior(Duration = 2)]
-        object GetProgramCards(string bundleName, DateTime since);
+        IEnumerable<object> GetProgramCards(string bundleName, DateTime since);
     }
 }
