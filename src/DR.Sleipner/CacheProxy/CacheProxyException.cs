@@ -9,7 +9,6 @@ namespace DR.Sleipner.CacheProxy
     {
         public CacheProxyException(string message) : base(message)
         {
-            
         }
     }
 }

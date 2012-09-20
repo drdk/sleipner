@@ -23,6 +23,12 @@ namespace DR.Sleipner.CacheProxy
             var methodInfo = RealInstance.GetType().GetMethod(methodName, parameters.Select(a => a.GetType()).ToArray());
             var cachedItem = _cacheProvider.GetItem(methodInfo, parameters);
 
+            if(cachedItem == null)
+            {
+                //If the provider returns null we're going to assume that it means it doesn't have this in cache.
+                cachedItem = new CachedObject(CachedObjectState.None, null);
+            }
+
             if(cachedItem.State == CachedObjectState.Exception)
             {
                 throw cachedItem.ThrownException;
@@ -57,6 +63,7 @@ namespace DR.Sleipner.CacheProxy
             try
             {
                 realInstanceResult = delegateMethod(RealInstance, parameters);
+                _cacheProvider.StoreItem(methodInfo, realInstanceResult, parameters);
             }
             catch(Exception e)
             {
