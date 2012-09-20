@@ -214,7 +214,7 @@ namespace DR.Sleipner.Test
             var cacheProvider = cacheProviderMock.Object;
 
             var cachedRepository = CacheProxyGenerator.GetProxy(repository, cacheProvider);
-            var result = cachedRepository.ParameteredMethod(first, second); //This raises exception
+            cachedRepository.ParameteredMethod(first, second); //This raises an exception
         }
 
         [Test]
@@ -240,6 +240,7 @@ namespace DR.Sleipner.Test
             var result = cachedRepository.ParameteredMethod(first, second); //This raises exception
             Assert.AreSame(result, testObject);
             Thread.Sleep(1000);
+
             //Verify that proxy stores the exception raied by interfaceMock
             cacheProviderMock.Verify(a => a.StoreItem(methodInfo, exception, first, second), Times.Once());
         }

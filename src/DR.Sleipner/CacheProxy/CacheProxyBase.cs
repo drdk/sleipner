@@ -53,7 +53,7 @@ namespace DR.Sleipner.CacheProxy
                                           {
                                               _cacheProvider.StoreItem(methodInfo, taskState.Result, parameters);
                                           }
-                                      });
+                                      }, TaskContinuationOptions.ExecuteSynchronously);
                 task.Start();
                 return cachedItem.Object;
             }

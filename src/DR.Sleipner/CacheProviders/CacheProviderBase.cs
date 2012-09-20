@@ -15,7 +15,7 @@ namespace DR.Sleipner.CacheProviders
         /// 1) Concrete implementation of the method
         /// 2) The interface method definition
         /// 3) The class that implements the method
-        /// 4) The interface top level interface definition
+        /// 4) The interface definition
         /// </summary>
         /// <param name="methodInfo">The methodInfo (concrete implementing class as it's source) to start at</param>
         /// <returns>Cache behavior or exception</returns>
