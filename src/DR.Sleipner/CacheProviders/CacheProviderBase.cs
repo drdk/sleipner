@@ -10,16 +10,40 @@ namespace DR.Sleipner.CacheProviders
 {
     public abstract class CacheProviderBase<T> where T : class
     {
+        /// <summary>
+        /// This method is used to find the most specific cache behavior for a particular method info. The order of lookup is:
+        /// 1) Concrete implementation of the method
+        /// 2) The interface method definition
+        /// 3) The class that implements the method
+        /// 4) The interface top level interface definition
+        /// </summary>
+        /// <param name="methodInfo">The methodInfo (concrete implementing class as it's source) to start at</param>
+        /// <returns>Cache behavior or exception</returns>
         protected CacheBehaviorAttribute GetCacheBehavior(MethodInfo methodInfo)
         {
+            if(methodInfo == null)
+                throw new ArgumentNullException("methodInfo");
 
-            var cacheAttribute = methodInfo.GetCustomAttributes(true).OfType<CacheBehaviorAttribute>();
-            if(!cacheAttribute.Any())
+            var searchOrder = new Func<IEnumerable<CacheBehaviorAttribute>>[]
+                                  {
+                                      () => methodInfo.GetCustomAttributes(true).OfType<CacheBehaviorAttribute>(),
+                                      () =>
+                                          {
+                                              var interfaceMethodInfo = typeof (T).GetMethod(methodInfo.Name, methodInfo.GetParameters().Select(a => a.ParameterType).ToArray());
+                                              return interfaceMethodInfo == null ? Enumerable.Empty<CacheBehaviorAttribute>() : interfaceMethodInfo.GetCustomAttributes(true).OfType<CacheBehaviorAttribute>();
+                                          },
+                                      () => methodInfo.DeclaringType == null ? Enumerable.Empty<CacheBehaviorAttribute>() : methodInfo.DeclaringType.GetCustomAttributes(true).OfType<CacheBehaviorAttribute>(),
+                                      () => typeof(T).GetCustomAttributes(true).OfType<CacheBehaviorAttribute>()
+                                  };
+
+            var cacheAttribute = searchOrder.SelectMany(a => a()).FirstOrDefault(); //This should iterate over the collection of search delegates until one of the yields something. I think?
+            if (cacheAttribute == null)
             {
                 throw new UnknownCacheBehaviorException();
             }
 
-            return cacheAttribute.Single();
+            return cacheAttribute;
         }
+ 
     }
 }

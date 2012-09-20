@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using DR.Sleipner.CacheProxy;
+using DR.Sleipner.Model;
 
 namespace DR.Sleipner.CacheProviders
 {

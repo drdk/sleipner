@@ -3,6 +3,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using DR.Sleipner.CacheProviders;
+using DR.Sleipner.Model;
 
 namespace DR.Sleipner.CacheProxy
 {

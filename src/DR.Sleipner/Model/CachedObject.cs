@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using DR.Sleipner.CacheProxy;
 
-namespace DR.Sleipner.CacheProxy
+namespace DR.Sleipner.Model
 {
     public class CachedObject
     {

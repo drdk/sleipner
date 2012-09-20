@@ -18,12 +18,18 @@ namespace DR.Sleipner
 
         public static T GetProxy<T>(T realInstance, ICacheProvider<T> cacheProvider) where T : class
         {
-            var realType = typeof (T);
-            if(!realType.IsInterface)
+            var proxy = GetProxyType<T>();
+            return (T)Activator.CreateInstance(proxy, realInstance, cacheProvider);
+        }
+
+        public static Type GetProxyType<T>() where T : class
+        {
+            var realType = typeof(T);
+            if (!realType.IsInterface)
             {
                 throw new ProxyTypeMustBeInterfaceException();
             }
-            
+
             Type proxyType;
             if (ProxyCache.ContainsKey(realType))
             {
@@ -34,8 +40,8 @@ namespace DR.Sleipner
                 proxyType = ProxyGenerator.CreateProxy<T>();
                 ProxyCache[realType] = proxyType;
             }
-            
-            return (T)Activator.CreateInstance(proxyType, realInstance, cacheProvider);
+
+            return proxyType;
         }
     }
 }

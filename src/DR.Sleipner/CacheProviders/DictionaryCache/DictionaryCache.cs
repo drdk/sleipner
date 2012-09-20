@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 using DR.Sleipner.CacheProxy;
+using DR.Sleipner.Model;
 
 namespace DR.Sleipner.CacheProviders.DictionaryCache
 {

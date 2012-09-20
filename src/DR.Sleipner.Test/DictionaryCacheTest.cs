@@ -6,6 +6,7 @@ using System.Threading;
 using DR.Sleipner.CacheProviders;
 using DR.Sleipner.CacheProviders.DictionaryCache;
 using DR.Sleipner.CacheProxy;
+using DR.Sleipner.Model;
 using NUnit.Framework;
 
 namespace DR.Sleipner.Test
