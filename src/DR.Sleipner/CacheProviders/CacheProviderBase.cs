@@ -44,6 +44,20 @@ namespace DR.Sleipner.CacheProviders
 
             return cacheAttribute;
         }
- 
+
+        protected string GenerateStringKey(MethodInfo methodInfo, object[] parameters)
+        {
+            var parameterValues = parameters.Select(a => a is string ? "\"" + a + "\"" : a);
+
+            var sb = new StringBuilder();
+            sb.Append(methodInfo.DeclaringType.FullName);
+            sb.Append(".");
+            sb.Append(methodInfo.Name);
+            sb.Append("(");
+            sb.Append(string.Join(", ", parameterValues));
+            sb.Append(")");
+
+            return sb.ToString();
+        }
     }
 }

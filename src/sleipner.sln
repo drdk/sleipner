@@ -5,6 +5,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DR.Sleipner", "DR.Sleipner\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DR.Sleipner.Test", "DR.Sleipner.Test\DR.Sleipner.Test.csproj", "{8B03F1BB-051C-4257-A1C7-C5AE5A5F247D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DR.Sleipner.EnyimMemcachedProvider", "DR.Sleipner.EnyimMemcachedProvider\DR.Sleipner.EnyimMemcachedProvider.csproj", "{0CAE6787-8A4E-48B3-A4DE-2CC287AC464C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -19,6 +21,10 @@ Global
 		{8B03F1BB-051C-4257-A1C7-C5AE5A5F247D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8B03F1BB-051C-4257-A1C7-C5AE5A5F247D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8B03F1BB-051C-4257-A1C7-C5AE5A5F247D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0CAE6787-8A4E-48B3-A4DE-2CC287AC464C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0CAE6787-8A4E-48B3-A4DE-2CC287AC464C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0CAE6787-8A4E-48B3-A4DE-2CC287AC464C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0CAE6787-8A4E-48B3-A4DE-2CC287AC464C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
