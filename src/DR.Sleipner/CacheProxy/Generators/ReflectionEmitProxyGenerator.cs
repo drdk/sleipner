@@ -95,24 +95,18 @@ namespace DR.Sleipner.CacheProxy.Generators
 
                 /* This generates a method call to ProxyCall in the base class. */
 
-                methodBody.Emit(OpCodes.Ldarg_0);                           //Load this on the stack
-                methodBody.Emit(OpCodes.Ldstr, method.Name);                //Load the first parameter value on the stack (name of the method being called)
-                methodBody.Emit(OpCodes.Ldloc, methodParameterArray);       //Load the array on the stack
-                methodBody.Emit(OpCodes.Callvirt, proxyCallMethod.MakeGenericMethod(new []{method.ReturnType}));         //Call the interceptMethod
-                //methodBody.Emit(OpCodes.Castclass, method.ReturnType);      //Cast returned item (since intercept returns object)
-                methodBody.Emit(OpCodes.Stloc, cachedItem);                 //Store the result of the method call in a local variable. This also pops it from the stack.
-                methodBody.Emit(OpCodes.Ldloc, cachedItem);                 //Load cached item on the stack
-                methodBody.Emit(OpCodes.Ret);                               //Return to caller
+                methodBody.Emit(OpCodes.Ldarg_0);                                                                       //Load this on the stack
+                methodBody.Emit(OpCodes.Ldstr, method.Name);                                                            //Load the first parameter value on the stack (name of the method being called)
+                methodBody.Emit(OpCodes.Ldloc, methodParameterArray);                                                   //Load the array on the stack
+                methodBody.Emit(OpCodes.Callvirt, proxyCallMethod.MakeGenericMethod(new []{method.ReturnType}));        //Call the interceptMethod
+                methodBody.Emit(OpCodes.Stloc, cachedItem);                                                             //Store the result of the method call in a local variable. This also pops it from the stack.
+                methodBody.Emit(OpCodes.Ldloc, cachedItem);                                                             //Load cached item on the stack
+                methodBody.Emit(OpCodes.Ret);                                                                           //Return to caller
 
                 typeBuilder.DefineMethodOverride(proxyMethod, method);
             }
 
             var createdType = typeBuilder.CreateType();
-
-            #if DEBUG
-            AssemblyBuilder.Save("SleipnerCacheProxies.dll"); //If we're running in debugging mode we're going to save this assembly on disc since we might need to ILSpy it.
-            #endif
-            
             return createdType;
         }
 
