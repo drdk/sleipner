@@ -42,9 +42,16 @@ namespace DR.Sleipner.EnyimMemcachedProvider.Transcoders
                 using (var streamReader = new StreamReader(memoryStream))
                 {
                     var textReader = new JsonTextReader(streamReader);
-                    var dynamicEntity = jsonSerializer.Deserialize(textReader);
+                    try
+                    {
+                        var dynamicEntity = jsonSerializer.Deserialize(textReader);
 
-                    return dynamicEntity;
+                        return dynamicEntity;
+                    }
+                    catch(JsonReaderException e)
+                    {
+                        return new object();
+                    }
                 }
             }
         }

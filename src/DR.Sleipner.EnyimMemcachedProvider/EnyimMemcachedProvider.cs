@@ -29,6 +29,11 @@ namespace DR.Sleipner.EnyimMemcachedProvider
             object value;
             if (_client.TryGet(key, out value))
             {
+                if(!(value is MemcachedObject<TObject>))
+                {
+                    return new CachedObject<TObject>(CachedObjectState.None, null);
+                }
+
                 var cachedObject = (MemcachedObject<TObject>) value;
                 if(cachedObject.IsException && cachedObject.Created.AddSeconds(2) < DateTime.Now)
                 {
@@ -41,7 +46,7 @@ namespace DR.Sleipner.EnyimMemcachedProvider
                 }
             }
 
-            return new CachedObject<TObject>(CachedObjectState.None, (TObject)value);
+            return new CachedObject<TObject>(CachedObjectState.None, null);
         }
 
         public void StoreItem<TObject>(MethodInfo method, TObject item, params object[] parameters)
