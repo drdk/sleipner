@@ -14,7 +14,7 @@ namespace DR.Sleipner.EnyimMemcachedProvider.Transcoders
         {
             var serializer = new JsonSerializer
             {
-                TypeNameHandling = TypeNameHandling.Objects
+                TypeNameHandling = TypeNameHandling.All
             };
 
             using (var memoryStream = new MemoryStream())
@@ -34,7 +34,7 @@ namespace DR.Sleipner.EnyimMemcachedProvider.Transcoders
         {
             var jsonSerializer = new JsonSerializer
             {
-                TypeNameHandling = TypeNameHandling.Objects
+                TypeNameHandling = TypeNameHandling.All
             };
 
             using (var memoryStream = new MemoryStream(item.Data.Array))
