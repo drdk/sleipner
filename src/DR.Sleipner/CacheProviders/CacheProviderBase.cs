@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Security.Cryptography;
 using System.Text;
 using DR.Sleipner.CacheProxy;
 
@@ -57,7 +58,10 @@ namespace DR.Sleipner.CacheProviders
             sb.Append(string.Join(", ", parameterValues));
             sb.Append(")");
 
-            return sb.ToString();
+            var bytes = Encoding.UTF8.GetBytes(sb.ToString());
+            var hashAlgorithm = new SHA256Managed();
+            var hash = hashAlgorithm.ComputeHash(bytes);
+            return Convert.ToBase64String(hash);
         }
     }
 }
