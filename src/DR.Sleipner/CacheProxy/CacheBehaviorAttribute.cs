@@ -2,7 +2,7 @@
 
 namespace DR.Sleipner.CacheProxy
 {
-    [AttributeUsage(AttributeTargets.Method, Inherited = true, AllowMultiple = false)]
+    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Interface | AttributeTargets.Class, Inherited = true, AllowMultiple = false)]
     public class CacheBehaviorAttribute : Attribute
     {
         /// <summary>
