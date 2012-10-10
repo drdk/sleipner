@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -48,7 +49,7 @@ namespace DR.Sleipner.CacheProxy.Generators
                 var parameterTypes = method.GetParameters().Select(a => a.ParameterType).ToArray();
                 var proxyMethod = typeBuilder.DefineMethod(method.Name, MethodAttributes.Public | MethodAttributes.Virtual, CallingConventions.HasThis, method.ReturnType, parameterTypes);
                 var methodBody = proxyMethod.GetILGenerator();
-                var cacheBehavior = GetCacheBehavior(method);
+                var cacheBehavior = GetCacheBehavior<T>(method);
 
                 /* This below code creates a pass through proxy method that does nothing. It just forwards everything to real instance.
                  * This is used for void method and method that do no define a cachebehavior */
@@ -110,9 +111,22 @@ namespace DR.Sleipner.CacheProxy.Generators
             return createdType;
         }
 
-        private CacheBehaviorAttribute GetCacheBehavior(MethodInfo methodInfo)
+        private CacheBehaviorAttribute GetCacheBehavior<T>(MethodInfo methodInfo)
         {
-            var cacheAttribute = methodInfo.GetCustomAttributes(typeof(CacheBehaviorAttribute), true).OfType<CacheBehaviorAttribute>().FirstOrDefault();
+            var searchOrder = new Func<IEnumerable<CacheBehaviorAttribute>>[]
+                                  {
+                                      () => methodInfo.GetCustomAttributes(true).OfType<CacheBehaviorAttribute>(),
+                                      () =>
+                                          {
+                                              var interfaceMethodInfo = typeof (T).GetMethod(methodInfo.Name, methodInfo.GetParameters().Select(a => a.ParameterType).ToArray());
+                                              return interfaceMethodInfo == null ? Enumerable.Empty<CacheBehaviorAttribute>() : interfaceMethodInfo.GetCustomAttributes(true).OfType<CacheBehaviorAttribute>();
+                                          },
+                                      () => methodInfo.DeclaringType == null ? Enumerable.Empty<CacheBehaviorAttribute>() : methodInfo.DeclaringType.GetCustomAttributes(true).OfType<CacheBehaviorAttribute>(),
+                                      () => typeof(T).GetCustomAttributes(true).OfType<CacheBehaviorAttribute>()
+                                  };
+
+            var cacheAttribute = searchOrder.SelectMany(a => a()).FirstOrDefault(); //This should iterate over the collection of search delegates until one of the yields something. I think?
+
             return cacheAttribute;
         }
     }
