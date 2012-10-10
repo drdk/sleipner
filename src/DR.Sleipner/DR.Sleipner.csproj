@@ -47,6 +47,7 @@
     <Compile Include="CacheProviders\ICacheProvider.cs" />
     <Compile Include="CacheProxyGenerator.cs" />
     <Compile Include="CacheProxy\CacheBehaviorAttribute.cs" />
+    <Compile Include="IDependancyResolver.cs" />
     <Compile Include="Model\CachedObject.cs" />
     <Compile Include="Model\CachedObjectState.cs" />
     <Compile Include="CacheProxy\CacheProxyException.cs" />

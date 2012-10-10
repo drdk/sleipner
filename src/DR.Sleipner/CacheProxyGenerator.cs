@@ -16,6 +16,19 @@ namespace DR.Sleipner
         private static readonly Dictionary<Type, Type> ProxyCache = new Dictionary<Type, Type>();
         private static readonly IProxyGenerator ProxyGenerator = new ReflectionEmitProxyGenerator();
 
+        public static IDependancyResolver Resolver;
+
+        public static T GetProxy<T, TImpl>() where T : class where TImpl : class, T
+        {
+            if(Resolver == null)
+                throw new Exception("No resolver has been set");
+
+            var instance = Resolver.Resolve<TImpl>();
+            var cache = Resolver.Resolve<ICacheProvider<T>>();
+
+            return GetProxy(instance, cache);
+        }
+
         public static T GetProxy<T>(T realInstance, ICacheProvider<T> cacheProvider) where T : class
         {
             var proxy = GetProxyType<T>();

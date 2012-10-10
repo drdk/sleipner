@@ -14,9 +14,9 @@ namespace DR.Sleipner.EnyimMemcachedProvider
 {
     public class EnyimMemcachedProvider<T> : CacheProviderBase<T>, ICacheProvider<T> where T : class
     {
-        private readonly MemcachedClient _client;
+        private readonly IMemcachedClient _client;
 
-        public EnyimMemcachedProvider(MemcachedClient client)
+        public EnyimMemcachedProvider(IMemcachedClient client)
         {
             _client = client;
         }
