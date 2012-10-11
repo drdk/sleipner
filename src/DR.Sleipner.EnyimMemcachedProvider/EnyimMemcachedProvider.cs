@@ -12,7 +12,7 @@ using Enyim.Caching.Memcached;
 
 namespace DR.Sleipner.EnyimMemcachedProvider
 {
-    public class EnyimMemcachedProvider<T> : CacheProviderBase<T>, ICacheProvider<T> where T : class
+    public class EnyimMemcachedProvider<TImpl> : CacheProviderBase<TImpl>, ICacheProvider<TImpl> where TImpl : class
     {
         private readonly IMemcachedClient _client;
 
@@ -35,7 +35,7 @@ namespace DR.Sleipner.EnyimMemcachedProvider
                 }
 
                 var cachedObject = (MemcachedObject<TObject>) value;
-                if(cachedObject.IsException && cachedObject.Created.AddSeconds(2) < DateTime.Now)
+                if (cachedObject.IsException && cachedObject.Created.AddSeconds(cacheBehavior.Duration) < DateTime.Now)
                 {
                     return new CachedObject<TObject>(CachedObjectState.Exception, new Exception("Exception stored in memcached"));
                 }
@@ -61,10 +61,10 @@ namespace DR.Sleipner.EnyimMemcachedProvider
             _client.Store(StoreMode.Set, key, cachedObject);
         }
 
-        public void StoreItem(MethodInfo method, Exception exception, params object[] parameters)
+        public void StoreItem<TObject>(MethodInfo method, Exception exception, params object[] parameters)
         {
             var key = GenerateStringKey(method, parameters);
-            var cachedObject = new MemcachedObject<object>()
+            var cachedObject = new MemcachedObject<TObject>()
             {
                 Created = DateTime.Now,
                 IsException = true,
@@ -73,19 +73,22 @@ namespace DR.Sleipner.EnyimMemcachedProvider
             _client.Store(StoreMode.Set, key, cachedObject);
         }
 
-        public void Purge(Expression<Action<T>> action)
+        public void Purge(Expression<Action<TImpl>> action)
         {
             throw new NotImplementedException();
         }
 
-        public CachedObjectState GetItemState(Expression<Action<T>> action)
+        public CachedObjectState GetItemState(Expression<Action<TImpl>> action)
         {
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// This is not supported in the EnyimMemcached provider
+        /// </summary>
         public void Exterminatus()
         {
-            _client.FlushAll();
+            throw new NotImplementedException();
         }
     }
 }
