@@ -16,29 +16,18 @@ namespace DR.Sleipner
         private static readonly Dictionary<Type, Type> ProxyCache = new Dictionary<Type, Type>();
         private static readonly IProxyGenerator ProxyGenerator = new ReflectionEmitProxyGenerator();
 
-        public static IDependancyResolver Resolver;
-
-        public static T GetProxy<T, TImpl>() where T : class where TImpl : class, T
+        public static T GetProxy<T, TImpl>(TImpl realInstance, ICacheProvider<TImpl> cacheProvider) where T : class where TImpl : class, T
         {
-            if(Resolver == null)
-                throw new Exception("No resolver has been set");
-
-            var instance = Resolver.Resolve<TImpl>();
-            var cache = Resolver.Resolve<ICacheProvider<T>>();
-
-            return GetProxy(instance, cache);
-        }
-
-        public static T GetProxy<T>(T realInstance, ICacheProvider<T> cacheProvider) where T : class
-        {
-            var proxy = GetProxyType<T>();
+            var proxy = GetProxyType<T, TImpl>();
             return (T)Activator.CreateInstance(proxy, realInstance, cacheProvider);
         }
 
-        public static Type GetProxyType<T>() where T : class
+        public static Type GetProxyType<T, TImpl>() where T : class where TImpl : class, T
         {
-            var realType = typeof(T);
-            if (!realType.IsInterface)
+            var interfaceType = typeof(T);
+            var realType = typeof (TImpl);
+
+            if (!interfaceType.IsInterface)
             {
                 throw new ProxyTypeMustBeInterfaceException();
             }
@@ -50,7 +39,7 @@ namespace DR.Sleipner
             }
             else
             {
-                proxyType = ProxyGenerator.CreateProxy<T>();
+                proxyType = ProxyGenerator.CreateProxy<T, TImpl>();
                 ProxyCache[realType] = proxyType;
             }
 

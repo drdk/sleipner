@@ -24,16 +24,17 @@ namespace DR.Sleipner.CacheProxy.Generators
             ModuleBuilder = AssemblyBuilder.DefineDynamicModule("SleipnerCacheProxies", "SleipnerCacheProxies.dll");
         }
 
-        public Type CreateProxy<T>() where T : class
+        public Type CreateProxy<T, TImpl>() where T : class where TImpl : class, T
         {
             var proxyType = typeof(T);
-            var baseType = typeof(CacheProxyBase<T>);
-            var typeBuilder = ModuleBuilder.DefineType(proxyType.FullName + "__Proxy", TypeAttributes.Class | TypeAttributes.Public, baseType, new[] { typeof(T) });
+            var realType = typeof (TImpl);
+            var baseType = typeof(CacheProxyBase<T, TImpl>);
+            var typeBuilder = ModuleBuilder.DefineType(realType.FullName + "__Proxy", TypeAttributes.Class | TypeAttributes.Public, baseType, new[] { typeof(T) });
 
-            var cTor = baseType.GetConstructor(new[] { typeof(T), typeof(ICacheProvider<T>) }); //Get the constructor from CacheProxyBase<T>
+            var cTor = baseType.GetConstructor(new[] { typeof(TImpl), typeof(ICacheProvider<TImpl>) }); //Get the constructor from CacheProxyBase<T>
 
             //Create the constructor
-            var cTorBuilder = typeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, new[] { typeof(T), typeof(ICacheProvider<T>) });
+            var cTorBuilder = typeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, new[] { typeof(TImpl), typeof(ICacheProvider<TImpl>) });
             var cTorBody = cTorBuilder.GetILGenerator();
             cTorBody.Emit(OpCodes.Ldarg_0);         //Load this on stack
             cTorBody.Emit(OpCodes.Ldarg_1);         //Load the first parameter of the constructor on stack

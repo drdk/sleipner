@@ -7,12 +7,12 @@ using DR.Sleipner.Model;
 
 namespace DR.Sleipner.CacheProxy
 {
-    public abstract class CacheProxyBase<T> where T : class
+    public abstract class CacheProxyBase<T, TImpl> where T : class where TImpl : class, T
     {
-        public T RealInstance;
-        private readonly ICacheProvider<T> _cacheProvider;
+        public TImpl RealInstance;
+        private readonly ICacheProvider<TImpl> _cacheProvider;
 
-        public CacheProxyBase(T real, ICacheProvider<T> cacheProvider)
+        public CacheProxyBase(TImpl real, ICacheProvider<TImpl> cacheProvider)
         {
             RealInstance = real;
             _cacheProvider = cacheProvider;
