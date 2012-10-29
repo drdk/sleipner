@@ -50,7 +50,11 @@ namespace DR.Sleipner.EnyimMemcachedProvider.Transcoders
                     }
                     catch(JsonReaderException e)
                     {
-                        return new object();
+                        return null;
+                    }
+                    catch(JsonSerializationException )
+                    {
+                        return null;
                     }
                 }
             }
