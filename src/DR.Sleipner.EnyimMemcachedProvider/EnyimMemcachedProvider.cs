@@ -35,14 +35,17 @@ namespace DR.Sleipner.EnyimMemcachedProvider
                 }
 
                 var cachedObject = (MemcachedObject<TObject>) value;
-                if (cachedObject.IsException && cachedObject.Created.AddSeconds(cacheBehavior.Duration) < DateTime.Now)
+                var fresh = cachedObject.Created.AddSeconds(cacheBehavior.Duration) > DateTime.Now;
+                var state = fresh ? CachedObjectState.Fresh : CachedObjectState.Stale;
+
+                if (cachedObject.IsException && fresh)
                 {
                     return new CachedObject<TObject>(CachedObjectState.Exception, new Exception("Exception stored in memcached"));
                 }
+
                 if(!cachedObject.IsException)
                 {
-                    var stale = cachedObject.Created.AddSeconds(cacheBehavior.Duration) < DateTime.Now;
-                    return new CachedObject<TObject>(stale ? CachedObjectState.Stale : CachedObjectState.Fresh, cachedObject.Object);
+                    return new CachedObject<TObject>(state, cachedObject.Object);
                 }
             }
 
