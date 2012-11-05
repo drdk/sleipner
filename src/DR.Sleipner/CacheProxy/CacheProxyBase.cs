@@ -67,7 +67,7 @@ namespace DR.Sleipner.CacheProxy
             }
             catch(Exception e)
             {
-                _cacheProvider.StoreItem(methodInfo, e, parameters);
+                _cacheProvider.StoreException<TResult>(methodInfo, e, parameters);
                 throw;
             }
             

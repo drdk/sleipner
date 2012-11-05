@@ -38,7 +38,7 @@ namespace DR.Sleipner.CacheProviders.DictionaryCache
             _cache[cacheKey] = new DictionaryCachedItem(item, TimeSpan.FromSeconds(cacheDuration.Duration));
         }
 
-        public void StoreItem<TObject>(MethodInfo methodInfo, Exception exception, params object[] parameters)
+        public void StoreException<TObject>(MethodInfo methodInfo, Exception exception, params object[] parameters)
         {
             var cacheDuration = GetCacheBehavior(methodInfo);
 
