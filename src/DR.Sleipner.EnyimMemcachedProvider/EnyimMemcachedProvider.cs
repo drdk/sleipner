@@ -29,7 +29,7 @@ namespace DR.Sleipner.EnyimMemcachedProvider
             object value;
             if (_client.TryGet(key, out value))
             {
-                var cachedObject = (MemcachedObject<TObject>) value;
+                var cachedObject = value as MemcachedObject<TObject>;
                 if (cachedObject == null)
                 {
                     return new CachedObject<TObject>(CachedObjectState.None, null);
