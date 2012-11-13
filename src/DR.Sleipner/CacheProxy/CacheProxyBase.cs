@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Threading.Tasks;
 using DR.Sleipner.CacheProviders;
 using DR.Sleipner.Model;
@@ -11,11 +12,15 @@ namespace DR.Sleipner.CacheProxy
     {
         public TImpl RealInstance;
         private readonly ICacheProvider<TImpl> _cacheProvider;
+        private readonly Action<Exception> _preserveInternalException;
 
         public CacheProxyBase(TImpl real, ICacheProvider<TImpl> cacheProvider)
         {
             RealInstance = real;
             _cacheProvider = cacheProvider;
+
+            MethodInfo preserveStackTrace = typeof(Exception).GetMethod("InternalPreserveStackTrace", BindingFlags.Instance | BindingFlags.NonPublic);
+            _preserveInternalException = (Action<Exception>)Delegate.CreateDelegate(typeof(Action<Exception>), preserveStackTrace);
         }
 
         public TResult ProxyCall<TResult>(string methodName, object[] parameters)
@@ -65,7 +70,14 @@ namespace DR.Sleipner.CacheProxy
                 realInstanceResult = (TResult)delegateMethod(RealInstance, parameters);
                 _cacheProvider.StoreItem(methodInfo, realInstanceResult, parameters);
             }
-            catch(Exception e)
+            catch (TargetInvocationException e)
+            {
+                var inner = e.InnerException;
+                _preserveInternalException(inner);
+                _cacheProvider.StoreException<TResult>(methodInfo, inner, parameters);
+                throw e.InnerException;
+            }
+            catch (Exception e)
             {
                 _cacheProvider.StoreException<TResult>(methodInfo, e, parameters);
                 throw;

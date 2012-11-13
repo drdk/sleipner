@@ -10,5 +10,6 @@ namespace DR.Sleipner.EnyimMemcachedProvider.Model
         public TObject Object;
         public bool IsException;
         public DateTime Created;
+        public Exception Exception;
     }
 }

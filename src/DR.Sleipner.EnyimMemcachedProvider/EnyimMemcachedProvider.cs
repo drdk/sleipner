@@ -40,6 +40,10 @@ namespace DR.Sleipner.EnyimMemcachedProvider
 
                 if (cachedObject.IsException && fresh)
                 {
+                    if (cachedObject.Exception != null)
+                    {
+                        return new CachedObject<TObject>(CachedObjectState.Exception, cachedObject.Exception);
+                    }
                     return new CachedObject<TObject>(CachedObjectState.Exception, new Exception("Exception stored in memcached"));
                 }
 
@@ -71,6 +75,7 @@ namespace DR.Sleipner.EnyimMemcachedProvider
             {
                 Created = DateTime.Now,
                 IsException = true,
+                Exception = exception,
             };
 
             _client.Store(StoreMode.Set, key, cachedObject);
