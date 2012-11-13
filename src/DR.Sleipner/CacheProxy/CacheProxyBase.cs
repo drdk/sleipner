@@ -19,6 +19,7 @@ namespace DR.Sleipner.CacheProxy
             RealInstance = real;
             _cacheProvider = cacheProvider;
 
+            // see: http://stackoverflow.com/questions/57383/in-c-how-can-i-rethrow-innerexception-without-losing-stack-trace/1663549#1663549
             MethodInfo preserveStackTrace = typeof(Exception).GetMethod("InternalPreserveStackTrace", BindingFlags.Instance | BindingFlags.NonPublic);
             _preserveInternalException = (Action<Exception>)Delegate.CreateDelegate(typeof(Action<Exception>), preserveStackTrace);
         }
