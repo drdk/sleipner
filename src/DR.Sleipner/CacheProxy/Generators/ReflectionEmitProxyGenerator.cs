@@ -35,6 +35,8 @@ namespace DR.Sleipner.CacheProxy.Generators
 
             //Create the constructor
             var cTorBuilder = typeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, new[] { typeof(TImpl), typeof(ICacheProvider<TImpl>) });
+            cTorBuilder.DefineParameter(1, ParameterAttributes.None, "real");
+            cTorBuilder.DefineParameter(2, ParameterAttributes.None, "cacheProvider");
             var cTorBody = cTorBuilder.GetILGenerator();
             cTorBody.Emit(OpCodes.Ldarg_0);         //Load this on stack
             cTorBody.Emit(OpCodes.Ldarg_1);         //Load the first parameter of the constructor on stack
