@@ -17,6 +17,12 @@ namespace DR.Sleipner.Test
     [TestFixture]
     public class CacheProxyGeneratorTest
     {
+        IAwesomeInterface CacheRepository;
+
+        public CacheProxyGeneratorTest()
+        {
+        }
+
         [Test]
         public void TestNonCachedMethod()
         {

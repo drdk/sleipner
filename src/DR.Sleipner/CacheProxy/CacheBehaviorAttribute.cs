@@ -9,5 +9,7 @@ namespace DR.Sleipner.CacheProxy
         /// Number of seconds the method output should be cached for
         /// </summary>
         public int Duration;
+
+        public bool Uncached;
     }
 }
