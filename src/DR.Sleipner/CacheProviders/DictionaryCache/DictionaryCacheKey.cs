@@ -41,7 +41,7 @@ namespace DR.Sleipner.CacheProviders.DictionaryCache
         {
             unchecked
             {
-                return ((_primaryKey != null ? _primaryKey.GetHashCode() : 0)*397) ^ (_cacheKeys != null ? _cacheKeys.GetHashCode() : 0);
+                return _primaryKey.GetHashCode()*397;
             }
         }
     }

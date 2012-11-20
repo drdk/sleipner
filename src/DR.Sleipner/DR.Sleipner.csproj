@@ -48,6 +48,9 @@
     <Compile Include="CacheProviders\MethodInfoExtensions.cs" />
     <Compile Include="CacheProxyGenerator.cs" />
     <Compile Include="CacheProxy\CacheBehaviorAttribute.cs" />
+    <Compile Include="CacheProxy\Syncronizer\RequestKey.cs" />
+    <Compile Include="CacheProxy\Syncronizer\IRequestSyncronizer.cs" />
+    <Compile Include="CacheProxy\Syncronizer\RequestSyncronizer.cs" />
     <Compile Include="IDependancyResolver.cs" />
     <Compile Include="Model\CachedObject.cs" />
     <Compile Include="Model\CachedObjectState.cs" />
