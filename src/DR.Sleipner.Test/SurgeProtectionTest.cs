@@ -57,6 +57,7 @@ namespace DR.Sleipner.Test
                             };
 
             Task.WaitAll(tasks);
+
             Mock.Verify(a => a.ParameterlessMethod(), Times.Exactly(1));
             Mock.Verify(a => a.ParameteredMethod("", 1), Times.Exactly(1));
             Mock.Verify(a => a.ParameteredMethod("", 2), Times.Exactly(1));
