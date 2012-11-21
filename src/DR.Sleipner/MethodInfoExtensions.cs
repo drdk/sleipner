@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using DR.Sleipner.CacheProxy;
 
-namespace DR.Sleipner.CacheProviders
+namespace DR.Sleipner
 {
     public static class MethodInfoExtensions
     {

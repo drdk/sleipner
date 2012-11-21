@@ -40,12 +40,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CacheConfiguration\CachePolicy.cs" />
+    <Compile Include="CacheConfiguration\IMethodConfigurationExpression.cs" />
+    <Compile Include="CacheConfiguration\MethodCachePolicy.cs" />
+    <Compile Include="CacheConfiguration\MethodCachePolicyExpression.cs" />
     <Compile Include="CacheProviders\CacheProviderBase.cs" />
     <Compile Include="CacheProviders\DictionaryCache\DictionaryCachedItem.cs" />
     <Compile Include="CacheProviders\DictionaryCache\DictionaryCacheKey.cs" />
     <Compile Include="CacheProviders\DictionaryCache\DictionaryCache.cs" />
     <Compile Include="CacheProviders\ICacheProvider.cs" />
-    <Compile Include="CacheProviders\MethodInfoExtensions.cs" />
+    <Compile Include="Helpers\SymbolExtensions.cs" />
+    <Compile Include="MethodInfoExtensions.cs" />
     <Compile Include="CacheProxyGenerator.cs" />
     <Compile Include="CacheProxy\CacheBehaviorAttribute.cs" />
     <Compile Include="CacheProxy\Syncronizer\RequestKey.cs" />
