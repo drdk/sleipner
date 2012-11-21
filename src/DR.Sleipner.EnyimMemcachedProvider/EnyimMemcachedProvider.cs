@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
+using DR.Sleipner.CacheConfiguration;
 using DR.Sleipner.CacheProviders;
 using DR.Sleipner.EnyimMemcachedProvider.Model;
 using DR.Sleipner.Model;
@@ -24,7 +25,7 @@ namespace DR.Sleipner.EnyimMemcachedProvider
         public CachedObject<TObject> GetItem<TObject>(MethodInfo method, params object[] parameters)
         {
             var key = GenerateStringKey(method, parameters);
-            var cacheBehavior = GetCacheBehavior(method);
+            var cachePolicy = CachePolicy.GetPolicy(method);
 
             object value;
             if (_client.TryGet(key, out value))
@@ -34,8 +35,8 @@ namespace DR.Sleipner.EnyimMemcachedProvider
                 {
                     return new CachedObject<TObject>(CachedObjectState.None, null);
                 }
-                
-                var fresh = cachedObject.Created.AddSeconds(cacheBehavior.Duration) > DateTime.Now;
+
+                var fresh = cachedObject.Created.AddSeconds(cachePolicy.CacheDuration) > DateTime.Now;
                 var state = fresh ? CachedObjectState.Fresh : CachedObjectState.Stale;
 
                 if (cachedObject.IsException && fresh)

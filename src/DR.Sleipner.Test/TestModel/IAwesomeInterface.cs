@@ -10,22 +10,17 @@ namespace DR.Sleipner.Test.TestModel
     {
         void VoidMethod();
 
-        [CacheBehavior(Duration = 10)]
         IEnumerable<string> FaulyCachedMethod();
         IEnumerable<string> FaulyNonCachedMethod();
 
         IEnumerable<string> NonCachedMethod();
 
-        [CacheBehavior(Duration = 10)]
         IEnumerable<string> ParameterlessMethod();
 
-        [CacheBehavior(Duration = 10)]
         IEnumerable<string> ParameteredMethod(string a, int b);
 
-        [CacheBehavior(Duration = 10)]
         object LolMethod();
 
-        [CacheBehavior(Duration = 10)]
         int RoflMethod();
     }
 }

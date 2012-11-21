@@ -38,8 +38,8 @@ namespace DR.Sleipner.Test
                 return new[] { "giraf" };
             });
 
-            ICacheProvider<AwesomeImplementation> cache = new DictionaryCache<AwesomeImplementation>();
-            Target = CacheProxyGenerator.GetProxy<IAwesomeInterface, AwesomeImplementation>(Mock.Object, cache);
+            ICacheProvider<IAwesomeInterface> cache = new DictionaryCache<IAwesomeInterface>();
+            Target = CacheProxyGenerator.GetProxy<IAwesomeInterface>(Mock.Object, cache);
         }
 
         [Test]

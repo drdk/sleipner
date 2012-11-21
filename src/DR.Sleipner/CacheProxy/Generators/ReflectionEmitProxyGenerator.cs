@@ -24,17 +24,17 @@ namespace DR.Sleipner.CacheProxy.Generators
             ModuleBuilder = AssemblyBuilder.DefineDynamicModule("SleipnerCacheProxies", "SleipnerCacheProxies.dll");
         }
 
-        public Type CreateProxy<T, TImpl>() where T : class where TImpl : class, T
+        public Type CreateProxy<T>() where T : class
         {
             var proxyType = typeof(T);
-            var realType = typeof (TImpl);
-            var baseType = typeof(CacheProxyBase<T, TImpl>);
+            var baseType = typeof(CacheProxyBase<T>);
+            var cacheType = typeof (ICacheProvider<T>);
 
-            var typeBuilder = getTypebuilder<T>(baseType, realType.FullName + "__Proxy");
-            var cTor = baseType.GetConstructor(new[] { typeof(TImpl), typeof(ICacheProvider<TImpl>) }); //Get the constructor from CacheProxyBase<T>
+            var typeBuilder = getTypebuilder<T>(baseType, proxyType.FullName + "__Proxy");
+            var cTor = baseType.GetConstructor(new[] { proxyType, cacheType }); //Get the constructor from CacheProxyBase<T>
 
             //Create the constructor
-            var cTorBuilder = typeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, new[] { typeof(TImpl), typeof(ICacheProvider<TImpl>) });
+            var cTorBuilder = typeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, new[] { proxyType, cacheType });
             cTorBuilder.DefineParameter(1, ParameterAttributes.None, "real");
             cTorBuilder.DefineParameter(2, ParameterAttributes.None, "cacheProvider");
             var cTorBody = cTorBuilder.GetILGenerator();
@@ -52,12 +52,11 @@ namespace DR.Sleipner.CacheProxy.Generators
                 var parameterTypes = method.GetParameters().Select(a => a.ParameterType).ToArray();
                 var proxyMethod = typeBuilder.DefineMethod(method.Name, MethodAttributes.Public | MethodAttributes.Virtual, CallingConventions.HasThis, method.ReturnType, parameterTypes);
                 var methodBody = proxyMethod.GetILGenerator();
-                var cacheBehavior = GetCacheBehavior(realType.GetMethod(method.Name, method.GetParameters().Select(a => a.ParameterType).ToArray()));
-
+                
                 /* This below code creates a pass through proxy method that does nothing. It just forwards everything to real instance.
                  * This is used for void method and method that do no define a cachebehavior */
 
-                if (method.ReturnType == typeof(void) || cacheBehavior.Uncached) //If a method is void or does not specify a caching behavior it just passes through directly to realInstance (we can't cache void output)
+                if (method.ReturnType == typeof(void)) //If a method is void or does not specify a caching behavior it just passes through directly to realInstance (we can't cache void output)
                 {
                     methodBody.Emit(OpCodes.Ldarg_0);                           //Load this on the stack
                     methodBody.Emit(OpCodes.Ldfld, realInstanceField);          //Load the real instance on the stack
@@ -112,20 +111,6 @@ namespace DR.Sleipner.CacheProxy.Generators
 
             var createdType = typeBuilder.CreateType();
             return createdType;
-        }
-
-        private CacheBehaviorAttribute GetCacheBehavior(MethodInfo methodInfo)
-        {
-            if (methodInfo == null)
-                throw new ArgumentNullException("methodInfo");
-
-            var cacheAttribute = methodInfo.FindCacheBehavior();
-            if (cacheAttribute == null)
-            {
-                return new CacheBehaviorAttribute { Uncached = true };
-            }
-
-            return cacheAttribute;
         }
 
         private TypeBuilder getTypebuilder<T>(Type baseType, string name)

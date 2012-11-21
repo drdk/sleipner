@@ -3,20 +3,21 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
+using DR.Sleipner.CacheConfiguration;
 using DR.Sleipner.CacheProviders;
 using DR.Sleipner.CacheProxy.Syncronizer;
 using DR.Sleipner.Model;
 
 namespace DR.Sleipner.CacheProxy
 {
-    public abstract class CacheProxyBase<T, TImpl> where T : class where TImpl : class, T
+    public abstract class CacheProxyBase<T> where T : class
     {
-        public TImpl RealInstance;
-        private readonly ICacheProvider<TImpl> _cacheProvider;
+        public T RealInstance;
+        private readonly ICacheProvider<T> _cacheProvider;
         private readonly Action<Exception> _preserveInternalException;
         private IRequestSyncronizer _syncronizer = new RequestSyncronizer();
 
-        public CacheProxyBase(TImpl real, ICacheProvider<TImpl> cacheProvider)
+        public CacheProxyBase(T real, ICacheProvider<T> cacheProvider)
         {
             RealInstance = real;
             _cacheProvider = cacheProvider;
@@ -28,7 +29,15 @@ namespace DR.Sleipner.CacheProxy
 
         public TResult ProxyCall<TResult>(string methodName, object[] parameters)
         {
-            var methodInfo = RealInstance.GetType().GetMethod(methodName, parameters.Select(a => a.GetType()).ToArray());
+            var methodInfo = typeof(T).GetMethod(methodName, parameters.Select(a => a.GetType()).ToArray());
+            var cachePolicy = CachePolicy.GetPolicy(methodInfo);
+
+            if (cachePolicy == null)
+            {
+                var realMethod = DelegateFactory.Create(methodInfo);
+                return (TResult)realMethod(RealInstance, parameters);
+            }
+
             var cachedItem = _cacheProvider.GetItem<TResult>(methodInfo, parameters) ?? new CachedObject<TResult>(CachedObjectState.None, null);
 
             if (cachedItem.State == CachedObjectState.Fresh)

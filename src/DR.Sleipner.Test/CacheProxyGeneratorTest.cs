@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using DR.Sleipner.CacheConfiguration;
 using DR.Sleipner.CacheProviders;
 using DR.Sleipner.CacheProviders.DictionaryCache;
 using DR.Sleipner.CacheProxy;
@@ -31,13 +32,13 @@ namespace DR.Sleipner.Test
             var interfaceMock = new Mock<AwesomeImplementation>();
             interfaceMock.Setup(a => a.NonCachedMethod()).Returns(testObject);
 
-            var cacheProviderMock = new Mock<ICacheProvider<AwesomeImplementation>>(); 
+            var cacheProviderMock = new Mock<ICacheProvider<IAwesomeInterface>>(); 
 
             var repository = interfaceMock.Object;
             var cacheProvider = cacheProviderMock.Object;
             var methodInfo = repository.GetType().GetMethod("NonCachedMethod");
             
-            var cachedRepository = CacheProxyGenerator.GetProxy<IAwesomeInterface, AwesomeImplementation>(repository, cacheProvider);
+            var cachedRepository = CacheProxyGenerator.GetProxy<IAwesomeInterface>(repository, cacheProvider);
             var result = cachedRepository.NonCachedMethod();
 
             //Verify that the proxy calls the method on the real implementation
@@ -61,7 +62,7 @@ namespace DR.Sleipner.Test
             var cacheProvider = cacheProviderMock.Object;
             var methodInfo = repository.GetType().GetMethod("VoidMethod");
 
-            var cachedRepository = CacheProxyGenerator.GetProxy<IAwesomeInterface, IAwesomeInterface>(repository, cacheProvider);
+            var cachedRepository = CacheProxyGenerator.GetProxy<IAwesomeInterface>(repository, cacheProvider);
             cachedRepository.VoidMethod();
 
             //Verify that the proxy calls the method on the real implementation
@@ -83,9 +84,9 @@ namespace DR.Sleipner.Test
 
             var repository = interfaceMock.Object;
             var cacheProvider = cacheProviderMock.Object;
-            var methodInfo = repository.GetType().GetMethod("ParameterlessMethod");
+            var methodInfo = typeof(IAwesomeInterface).GetMethod("ParameterlessMethod");
 
-            var cachedRepository = CacheProxyGenerator.GetProxy<IAwesomeInterface, IAwesomeInterface>(repository, cacheProvider);
+            var cachedRepository = CacheProxyGenerator.GetProxy(repository, cacheProvider);
             var result = cachedRepository.ParameterlessMethod();
 
             //Verify that the proxy calls the method on the real implementation
@@ -116,9 +117,11 @@ namespace DR.Sleipner.Test
 
             var repository = interfaceMock.Object;
             var cacheProvider = cacheProviderMock.Object;
-            var methodInfo = repository.GetType().GetMethod("ParameteredMethod");
+            var methodInfo = typeof(IAwesomeInterface).GetMethod("ParameteredMethod");
 
-            var cachedRepository = CacheProxyGenerator.GetProxy<IAwesomeInterface, IAwesomeInterface>(repository, cacheProvider);
+            //CachePolicy.For<IAwesomeInterface>(a => a.ParameteredMethod("", 0)).CacheFor(10);
+
+            var cachedRepository = CacheProxyGenerator.GetProxy(repository, cacheProvider);
             var result = cachedRepository.ParameteredMethod(first, second);
 
             //Verify that the proxy calls the method on the real implementation
@@ -146,14 +149,14 @@ namespace DR.Sleipner.Test
             interfaceMock.Setup(a => a.ParameteredMethod(first, second)).Returns(testObject);
 
             var repository = interfaceMock.Object;
-            var methodInfo = repository.GetType().GetMethod("ParameteredMethod");
+            var methodInfo = typeof(IAwesomeInterface).GetMethod("ParameteredMethod");
 
             var cacheProviderMock = new Mock<ICacheProvider<IAwesomeInterface>>();
             cacheProviderMock.Setup(a => a.GetItem<IEnumerable<string>>(methodInfo, first, second)).Returns(new CachedObject<IEnumerable<string>>(CachedObjectState.Fresh, testObject));
             
             var cacheProvider = cacheProviderMock.Object;
 
-            var cachedRepository = CacheProxyGenerator.GetProxy<IAwesomeInterface, IAwesomeInterface>(repository, cacheProvider);
+            var cachedRepository = CacheProxyGenerator.GetProxy<IAwesomeInterface>(repository, cacheProvider);
             var result = cachedRepository.ParameteredMethod(first, second);
 
             //Verify that the proxy DID NOT call the method on the real implementation
@@ -182,12 +185,14 @@ namespace DR.Sleipner.Test
 
             var repository = interfaceMock.Object;
             var cacheProvider = cacheProviderMock.Object;
-            var methodInfo = repository.GetType().GetMethod("ParameteredMethod");
+            var methodInfo = typeof(IAwesomeInterface).GetMethod("ParameteredMethod");
+
+            //CachePolicy.For<IAwesomeInterface>(a => a.ParameteredMethod(string.Empty, 0)).CacheFor(10);
 
             interfaceMock.Setup(a => a.ParameteredMethod(first, second)).Returns(testObject);
             cacheProviderMock.Setup(a => a.GetItem<IEnumerable<string>>(methodInfo, first, second)).Returns(new CachedObject<IEnumerable<string>>(CachedObjectState.Stale, testObject));
 
-            var cachedLol = CacheProxyGenerator.GetProxy<IAwesomeInterface, IAwesomeInterface>(repository, cacheProvider);
+            var cachedLol = CacheProxyGenerator.GetProxy(repository, cacheProvider);
             var result = cachedLol.ParameteredMethod(first, second);
 
             //Verify that the cache returns the object returned by the real implementation
@@ -219,7 +224,7 @@ namespace DR.Sleipner.Test
 
             var cacheProvider = cacheProviderMock.Object;
 
-            var cachedRepository = CacheProxyGenerator.GetProxy<IAwesomeInterface, IAwesomeInterface>(repository, cacheProvider);
+            var cachedRepository = CacheProxyGenerator.GetProxy<IAwesomeInterface>(repository, cacheProvider);
             cachedRepository.ParameteredMethod(first, second); //This raises an exception
         }
         /* Not sure why this test is now defective. It appears to work when traced.

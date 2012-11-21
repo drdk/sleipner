@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
+using DR.Sleipner.CacheConfiguration;
 using DR.Sleipner.CacheProxy;
 using DR.Sleipner.Model;
 

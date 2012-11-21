@@ -16,16 +16,15 @@ namespace DR.Sleipner
         private static readonly Dictionary<Type, Type> ProxyCache = new Dictionary<Type, Type>();
         private static readonly IProxyGenerator ProxyGenerator = new ReflectionEmitProxyGenerator();
 
-        public static T GetProxy<T, TImpl>(TImpl realInstance, ICacheProvider<TImpl> cacheProvider) where T : class where TImpl : class, T
+        public static T GetProxy<T>(T realInstance, ICacheProvider<T> cacheProvider) where T : class
         {
-            var proxy = GetProxyType<T, TImpl>();
+            var proxy = GetProxyType<T>();
             return (T)Activator.CreateInstance(proxy, realInstance, cacheProvider);
         }
 
-        public static Type GetProxyType<T, TImpl>() where T : class where TImpl : class, T
+        public static Type GetProxyType<T>() where T : class
         {
             var interfaceType = typeof(T);
-            var realType = typeof (TImpl);
 
             if (!interfaceType.IsInterface)
             {
@@ -33,14 +32,14 @@ namespace DR.Sleipner
             }
 
             Type proxyType;
-            if (ProxyCache.ContainsKey(realType))
+            if (ProxyCache.ContainsKey(interfaceType))
             {
-                proxyType = ProxyCache[realType];
+                proxyType = ProxyCache[interfaceType];
             }
             else
             {
-                proxyType = ProxyGenerator.CreateProxy<T, TImpl>();
-                ProxyCache[realType] = proxyType;
+                proxyType = ProxyGenerator.CreateProxy<T>();
+                ProxyCache[interfaceType] = proxyType;
             }
 
             return proxyType;

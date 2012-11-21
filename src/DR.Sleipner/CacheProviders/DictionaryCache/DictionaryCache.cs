@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
+using DR.Sleipner.CacheConfiguration;
 using DR.Sleipner.CacheProxy;
 using DR.Sleipner.Model;
 
@@ -32,16 +33,14 @@ namespace DR.Sleipner.CacheProviders.DictionaryCache
 
         public void StoreItem<TObject>(MethodInfo methodInfo, TObject item, params object[] parameters)
         {
-            var cacheDuration = GetCacheBehavior(methodInfo);
+            var cachePolicy = CachePolicy.GetPolicy(methodInfo);
 
             var cacheKey = new DictionaryCacheKey(methodInfo.Name, parameters);
-            _cache[cacheKey] = new DictionaryCachedItem(item, TimeSpan.FromSeconds(cacheDuration.Duration));
+            _cache[cacheKey] = new DictionaryCachedItem(item, TimeSpan.FromSeconds(cachePolicy.CacheDuration));
         }
 
         public void StoreException<TObject>(MethodInfo methodInfo, Exception exception, params object[] parameters)
         {
-            var cacheDuration = GetCacheBehavior(methodInfo);
-
             var cacheKey = new DictionaryCacheKey(methodInfo.Name, parameters);
             _cache[cacheKey] = new DictionaryCachedItem(exception, TimeSpan.FromSeconds(2));
         }

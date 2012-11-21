@@ -17,9 +17,6 @@ namespace DR.Sleipner.Test
             CachePolicy.DefaultIs().CacheFor(100).IgnoreExceptions();
             CachePolicy.ForAll<IAwesomeInterface>().CacheFor(600).IgnoreExceptions();
             CachePolicy.For<IAwesomeInterface>(a => a.ParameteredMethod("", 0)).CacheFor(20).IgnoreExceptions();
-
-            var bla = CachePolicy.CachePolicies;
-            var kk = "";
         }
     }
 }

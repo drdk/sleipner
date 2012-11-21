@@ -50,9 +50,7 @@
     <Compile Include="CacheProviders\DictionaryCache\DictionaryCache.cs" />
     <Compile Include="CacheProviders\ICacheProvider.cs" />
     <Compile Include="Helpers\SymbolExtensions.cs" />
-    <Compile Include="MethodInfoExtensions.cs" />
     <Compile Include="CacheProxyGenerator.cs" />
-    <Compile Include="CacheProxy\CacheBehaviorAttribute.cs" />
     <Compile Include="CacheProxy\Syncronizer\RequestKey.cs" />
     <Compile Include="CacheProxy\Syncronizer\IRequestSyncronizer.cs" />
     <Compile Include="CacheProxy\Syncronizer\RequestSyncronizer.cs" />

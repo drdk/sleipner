@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using DR.Sleipner.CacheConfiguration;
 using DR.Sleipner.CacheProviders;
 using DR.Sleipner.CacheProviders.DictionaryCache;
 using DR.Sleipner.CacheProxy;
@@ -20,7 +21,7 @@ namespace DR.Sleipner.Test
             ICacheProvider<IDummyInterface> cache = new DictionaryCache<IDummyInterface>();
             var methodInfo = typeof(IDummyInterface).GetMethod("GetProgramCards");
 
-            object[] parameters = new [] {"", "1"};
+            object[] parameters = new [] {"", "1"};     
             var val = Enumerable.Empty<object>();
 
             cache.StoreItem(methodInfo, val, parameters);
@@ -32,6 +33,8 @@ namespace DR.Sleipner.Test
         [Test]
         public void TestReturnsStaleOutsidePeriod()
         {
+            CachePolicy.For<IDummyInterface>(a => a.GetProgramCards(string.Empty, default(DateTime))).CacheFor(2);
+
             ICacheProvider<IDummyInterface> cache = new DictionaryCache<IDummyInterface>();
             var methodInfo = typeof(IDummyInterface).GetMethod("GetProgramCards");
 
@@ -50,7 +53,6 @@ namespace DR.Sleipner.Test
     {
         void Method();
 
-        [CacheBehavior(Duration = 2)]
         IEnumerable<object> GetProgramCards(string bundleName, DateTime since);
     }
 }

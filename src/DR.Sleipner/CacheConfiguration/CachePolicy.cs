@@ -10,7 +10,7 @@ namespace DR.Sleipner.CacheConfiguration
     public static class CachePolicy
     {
         public static Dictionary<MethodInfo, MethodCachePolicy> CachePolicies = new Dictionary<MethodInfo, MethodCachePolicy>();
-        public static MethodCachePolicy DefaultConfiguration = new MethodCachePolicy();
+        public static MethodCachePolicy DefaultConfiguration;
 
         public static MethodCachePolicyExpression<T> For<T>(Expression<Action<T>> method) where T : class
         {
@@ -40,9 +40,18 @@ namespace DR.Sleipner.CacheConfiguration
 
         public static MethodCachePolicyExpression<object> DefaultIs()
         {
+            DefaultConfiguration = new MethodCachePolicy();
             return new MethodCachePolicyExpression<object>(DefaultConfiguration);
         } 
         
+        public static MethodCachePolicy GetPolicy(MethodInfo method)
+        {
+            MethodCachePolicy cachePolicy;
+            cachePolicy = CachePolicies.TryGetValue(method, out cachePolicy) ? CachePolicies[method] : DefaultConfiguration;
+
+            return cachePolicy;
+        }
+
         private static IEnumerable<MethodCachePolicy> GetPolicies(Type type)
         {
             foreach (var methodInfo in type.GetMethods())
