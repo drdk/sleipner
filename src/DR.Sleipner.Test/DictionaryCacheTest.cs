@@ -19,13 +19,18 @@ namespace DR.Sleipner.Test
         public void TestReturnsCachedItemWithinPeriod()
         {
             ICacheProvider<IDummyInterface> cache = new DictionaryCache<IDummyInterface>();
+            
+            var bla = new CachePolicyProvider<IDummyInterface>();
+            bla.For(a => a.GetProgramCards("", default(DateTime))).CacheFor(10);
+
             var methodInfo = typeof(IDummyInterface).GetMethod("GetProgramCards");
+            var cachePolicy = bla.GetPolicy(methodInfo);
 
             object[] parameters = new [] {"", "1"};     
             var val = Enumerable.Empty<object>();
 
-            cache.StoreItem(methodInfo, val, parameters);
-            var returnedValue = cache.GetItem<IEnumerable<object>>(methodInfo, parameters);
+            cache.StoreItem(methodInfo, cachePolicy, val, parameters);
+            var returnedValue = cache.GetItem<IEnumerable<object>>(methodInfo, cachePolicy, parameters);
 
             Assert.AreEqual(val, returnedValue.Object);
         }
@@ -36,14 +41,19 @@ namespace DR.Sleipner.Test
             CachePolicy.For<IDummyInterface>(a => a.GetProgramCards(string.Empty, default(DateTime))).CacheFor(2);
 
             ICacheProvider<IDummyInterface> cache = new DictionaryCache<IDummyInterface>();
+
+            var bla = new CachePolicyProvider<IDummyInterface>();
+            bla.For(a => a.GetProgramCards("", default(DateTime))).CacheFor(2);
+
             var methodInfo = typeof(IDummyInterface).GetMethod("GetProgramCards");
+            var cachePolicy = bla.GetPolicy(methodInfo);
 
             object[] parameters = new[] { "", "1" };
             var val = Enumerable.Empty<object>();
 
-            cache.StoreItem(methodInfo, val, parameters);
+            cache.StoreItem(methodInfo, cachePolicy, val, parameters);
             Thread.Sleep(2000 + 100);
-            var returnedValue = cache.GetItem<IEnumerable<object>>(methodInfo, parameters);
+            var returnedValue = cache.GetItem<IEnumerable<object>>(methodInfo, cachePolicy, parameters);
 
             Assert.IsTrue(returnedValue.State == CachedObjectState.Stale);
         }

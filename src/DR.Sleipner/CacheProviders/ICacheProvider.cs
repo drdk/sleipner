@@ -12,9 +12,9 @@ namespace DR.Sleipner.CacheProviders
 {
     public interface ICacheProvider<T> where T : class
     {
-        CachedObject<TObject> GetItem<TObject>(MethodInfo method, params object[] parameters);
-        void StoreItem<TObject>(MethodInfo method, TObject item, params object[] parameters);
-        void StoreException<TObject>(MethodInfo method, Exception exception, params object[] parameters);
+        CachedObject<TObject> GetItem<TObject>(MethodInfo methodInfo, MethodCachePolicy cachePolicy, IEnumerable<object> parameters);
+        void StoreItem<TObject>(MethodInfo methodInfo, MethodCachePolicy cachePolicy, TObject item, IEnumerable<object> parameters);
+        void StoreException<TObject>(MethodInfo methodInfo, MethodCachePolicy cachePolicy, Exception exception, IEnumerable<object> parameters);
 
         void Purge(Expression<Action<T>> action);
         CachedObjectState GetItemState(Expression<Action<T>> action);

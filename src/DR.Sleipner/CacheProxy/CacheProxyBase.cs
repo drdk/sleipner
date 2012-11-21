@@ -38,7 +38,7 @@ namespace DR.Sleipner.CacheProxy
                 return (TResult)realMethod(RealInstance, parameters);
             }
 
-            var cachedItem = _cacheProvider.GetItem<TResult>(methodInfo, parameters) ?? new CachedObject<TResult>(CachedObjectState.None, null);
+            var cachedItem = _cacheProvider.GetItem<TResult>(methodInfo, cachePolicy, parameters) ?? new CachedObject<TResult>(CachedObjectState.None, null);
 
             if (cachedItem.State == CachedObjectState.Fresh)
             {
@@ -72,11 +72,11 @@ namespace DR.Sleipner.CacheProxy
                     {
                         if (taskState.Exception != null)
                         {
-                            _cacheProvider.StoreItem(methodInfo, taskState.Exception.InnerException, parameters);
+                            _cacheProvider.StoreItem(methodInfo, cachePolicy, taskState.Exception.InnerException, parameters);
                         }
                         else
                         {
-                            _cacheProvider.StoreItem(methodInfo, taskState.Result, parameters);
+                            _cacheProvider.StoreItem(methodInfo, cachePolicy, taskState.Result, parameters);
                         }
                     }
                     finally
@@ -94,18 +94,18 @@ namespace DR.Sleipner.CacheProxy
             try
             {
                 realInstanceResult = (TResult) delegateMethod(RealInstance, parameters);
-                _cacheProvider.StoreItem(methodInfo, realInstanceResult, parameters);
+                _cacheProvider.StoreItem(methodInfo, cachePolicy, realInstanceResult, parameters);
             }
             catch (TargetInvocationException e)
             {
                 var inner = e.InnerException;
                 _preserveInternalException(inner);
-                _cacheProvider.StoreException<TResult>(methodInfo, inner, parameters);
+                _cacheProvider.StoreException<TResult>(methodInfo, cachePolicy, inner, parameters);
                 throw e.InnerException;
             }
             catch (Exception e)
             {
-                _cacheProvider.StoreException<TResult>(methodInfo, e, parameters);
+                _cacheProvider.StoreException<TResult>(methodInfo, cachePolicy, e, parameters);
                 throw;
             }
             finally

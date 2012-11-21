@@ -41,6 +41,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CacheConfiguration\CachePolicy.cs" />
+    <Compile Include="CacheConfiguration\CachePolicyExtensions.cs" />
+    <Compile Include="CacheConfiguration\CachePolicyProvider.cs" />
+    <Compile Include="CacheConfiguration\ICachePolicyProvider.cs" />
     <Compile Include="CacheConfiguration\IMethodConfigurationExpression.cs" />
     <Compile Include="CacheConfiguration\MethodCachePolicy.cs" />
     <Compile Include="CacheConfiguration\MethodCachePolicyExpression.cs" />
@@ -49,6 +52,7 @@
     <Compile Include="CacheProviders\DictionaryCache\DictionaryCacheKey.cs" />
     <Compile Include="CacheProviders\DictionaryCache\DictionaryCache.cs" />
     <Compile Include="CacheProviders\ICacheProvider.cs" />
+    <Compile Include="CacheProxy\IProxyHandler.cs" />
     <Compile Include="Helpers\SymbolExtensions.cs" />
     <Compile Include="CacheProxyGenerator.cs" />
     <Compile Include="CacheProxy\Syncronizer\RequestKey.cs" />
@@ -62,9 +66,11 @@
     <Compile Include="CacheProxy\DelegateFactory.cs" />
     <Compile Include="CacheProxy\IProxyGenerator.cs" />
     <Compile Include="CacheProxy\UnknownCacheBehaviorException.cs" />
+    <Compile Include="ThrottledProxyHandler.cs" />
     <Compile Include="ProxyTypeMustBeInterfaceException.cs" />
     <Compile Include="CacheProxy\Generators\ReflectionEmitProxyGenerator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SleipnerProxy.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -22,10 +22,9 @@ namespace DR.Sleipner.EnyimMemcachedProvider
             _client = client;
         }
 
-        public CachedObject<TObject> GetItem<TObject>(MethodInfo method, params object[] parameters)
+        public CachedObject<TObject> GetItem<TObject>(MethodInfo methodInfo, MethodCachePolicy cachePolicy, IEnumerable<object> parameters)
         {
-            var key = GenerateStringKey(method, parameters);
-            var cachePolicy = CachePolicy.GetPolicy(method);
+            var key = GenerateStringKey(methodInfo, parameters.ToArray());
 
             object value;
             if (_client.TryGet(key, out value))
@@ -57,9 +56,9 @@ namespace DR.Sleipner.EnyimMemcachedProvider
             return new CachedObject<TObject>(CachedObjectState.None, null);
         }
 
-        public void StoreItem<TObject>(MethodInfo method, TObject item, params object[] parameters)
+        public void StoreItem<TObject>(MethodInfo methodInfo, MethodCachePolicy cachePolicy, TObject item, IEnumerable<object> parameters)
         {
-            var key = GenerateStringKey(method, parameters);
+            var key = GenerateStringKey(methodInfo, parameters.ToArray());
             var cachedObject = new MemcachedObject<TObject>()
                                    {
                                        Created = DateTime.Now,
@@ -69,9 +68,9 @@ namespace DR.Sleipner.EnyimMemcachedProvider
             _client.Store(StoreMode.Set, key, cachedObject);
         }
 
-        public void StoreException<TObject>(MethodInfo method, Exception exception, params object[] parameters)
+        public void StoreException<TObject>(MethodInfo methodInfo, MethodCachePolicy cachePolicy, Exception exception, IEnumerable<object> parameters)
         {
-            var key = GenerateStringKey(method, parameters);
+            var key = GenerateStringKey(methodInfo, parameters.ToArray());
             var cachedObject = new MemcachedObject<TObject>()
             {
                 Created = DateTime.Now,

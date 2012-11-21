@@ -8,6 +8,6 @@ namespace DR.Sleipner.CacheConfiguration
     public interface IMethodConfigurationExpression<T> where T : class
     {
         IMethodConfigurationExpression<T> CacheFor(int durationSeconds);
-        IMethodConfigurationExpression<T> IgnoreExceptions();
+        IMethodConfigurationExpression<T> SupressExceptions(bool enabled);
     }
 }

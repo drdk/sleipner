@@ -26,9 +26,9 @@ namespace DR.Sleipner.CacheConfiguration
             return new MethodCachePolicyExpression<T>(_methodCachePolicies);
         }
 
-        public IMethodConfigurationExpression<T> IgnoreExceptions()
+        public IMethodConfigurationExpression<T> SupressExceptions(bool enabled)
         {
-            SetForAll(a => a.IgnoreExceptions = true);
+            SetForAll(a => a.SupressExceptions = enabled);
 
             return new MethodCachePolicyExpression<T>(_methodCachePolicies);
         }

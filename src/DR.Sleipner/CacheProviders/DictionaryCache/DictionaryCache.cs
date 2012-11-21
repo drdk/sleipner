@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using DR.Sleipner.CacheConfiguration;
@@ -13,9 +14,9 @@ namespace DR.Sleipner.CacheProviders.DictionaryCache
     {
         private readonly IDictionary<DictionaryCacheKey, DictionaryCachedItem> _cache = new ConcurrentDictionary<DictionaryCacheKey, DictionaryCachedItem>();
 
-        public CachedObject<TObject> GetItem<TObject>(MethodInfo methodInfo, params object[] parameters)
+        public CachedObject<TObject> GetItem<TObject>(MethodInfo methodInfo, MethodCachePolicy cachePolicy, IEnumerable<object> parameters)
         {
-            var cacheKey = new DictionaryCacheKey(methodInfo.Name, parameters);
+            var cacheKey = new DictionaryCacheKey(methodInfo.Name, parameters.ToArray());
             if(_cache.ContainsKey(cacheKey))
             {
                 var cachedObject = _cache[cacheKey];
@@ -31,17 +32,16 @@ namespace DR.Sleipner.CacheProviders.DictionaryCache
             return new CachedObject<TObject>(CachedObjectState.None, null);
         }
 
-        public void StoreItem<TObject>(MethodInfo methodInfo, TObject item, params object[] parameters)
+        public void StoreItem<TObject>(MethodInfo methodInfo, MethodCachePolicy cachePolicy, TObject item, IEnumerable<object> parameters)
         {
-            var cachePolicy = CachePolicy.GetPolicy(methodInfo);
-
-            var cacheKey = new DictionaryCacheKey(methodInfo.Name, parameters);
+            var cacheKey = new DictionaryCacheKey(methodInfo.Name, parameters.ToArray());
             _cache[cacheKey] = new DictionaryCachedItem(item, TimeSpan.FromSeconds(cachePolicy.CacheDuration));
         }
 
-        public void StoreException<TObject>(MethodInfo methodInfo, Exception exception, params object[] parameters)
+        public void StoreException<TObject>(MethodInfo methodInfo, MethodCachePolicy cachePolicy, Exception exception, IEnumerable<object> parameters)
         {
-            var cacheKey = new DictionaryCacheKey(methodInfo.Name, parameters);
+            var cacheKey = new DictionaryCacheKey(methodInfo.Name, parameters.ToArray());
+
             _cache[cacheKey] = new DictionaryCachedItem(exception, TimeSpan.FromSeconds(2));
         }
 

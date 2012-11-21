@@ -26,28 +26,34 @@ namespace DR.Sleipner.CacheProxy.Generators
 
         public Type CreateProxy<T>() where T : class
         {
-            var proxyType = typeof(T);
-            var baseType = typeof(CacheProxyBase<T>);
-            var cacheType = typeof (ICacheProvider<T>);
+            var interfaceType = typeof(T);
+            var typeBuilder = getTypebuilder<T>(interfaceType.FullName + "__Proxy");
 
-            var typeBuilder = getTypebuilder<T>(baseType, proxyType.FullName + "__Proxy");
-            var cTor = baseType.GetConstructor(new[] { proxyType, cacheType }); //Get the constructor from CacheProxyBase<T>
-
-            //Create the constructor
-            var cTorBuilder = typeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, new[] { proxyType, cacheType });
-            cTorBuilder.DefineParameter(1, ParameterAttributes.None, "real");
-            cTorBuilder.DefineParameter(2, ParameterAttributes.None, "cacheProvider");
-            var cTorBody = cTorBuilder.GetILGenerator();
-            cTorBody.Emit(OpCodes.Ldarg_0);         //Load this on stack
-            cTorBody.Emit(OpCodes.Ldarg_1);         //Load the first parameter of the constructor on stack
-            cTorBody.Emit(OpCodes.Ldarg_2);         //Load the second parameter of the constructor on stack
-            cTorBody.Emit(OpCodes.Call, cTor);      //Call base constructor
-            cTorBody.Emit(OpCodes.Ret);             //Return
-
-            var realInstanceField = baseType.GetField("RealInstance");
-            var proxyCallMethod = baseType.GetMethod("ProxyCall");
+            //Create two class members: handler and realInstance
+            var realInstanceField = typeBuilder.DefineField("realInstance", interfaceType, FieldAttributes.Private);
+            var handlerField = typeBuilder.DefineField("handler", typeof (IProxyHandler<T>), FieldAttributes.Private);
             
-            foreach (var method in proxyType.GetMethods()) //We guarantee internally that this is the methods of an interface. The compiler will gurantee that these are all the methods that needs proxying.
+            //Create the constructor
+            var cTorBuilder = typeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, new[] { interfaceType, typeof(IProxyHandler<T>) });
+            cTorBuilder.DefineParameter(1, ParameterAttributes.None, "realInstance");
+            cTorBuilder.DefineParameter(2, ParameterAttributes.None, "handler");
+
+            //Create constructor body
+            var cTorBody = cTorBuilder.GetILGenerator();
+
+            cTorBody.Emit(OpCodes.Ldarg_0);                     //Load this on stack
+            cTorBody.Emit(OpCodes.Ldarg_1);                     //Load the first parameter (the realInstance parameter) of the constructor on stack
+            cTorBody.Emit(OpCodes.Stfld, realInstanceField);    //Store parameter reference in realInstanceField
+
+            cTorBody.Emit(OpCodes.Ldarg_0);                     //Load this on stack
+            cTorBody.Emit(OpCodes.Ldarg_2);                     //Load second parameter on stack (the IProxyHandler parameter).
+            cTorBody.Emit(OpCodes.Stfld, handlerField);         //Store parameter refrence in handlerField
+
+            cTorBody.Emit(OpCodes.Ret);                         //Return
+
+            var proxyCallMethod = typeof(IProxyHandler<T>).GetMethod("HandleRequest");
+            
+            foreach (var method in interfaceType.GetMethods()) //We guarantee internally that this is the methods of an interface. The compiler will gurantee that these are all the methods that needs proxying.
             {
                 var parameterTypes = method.GetParameters().Select(a => a.ParameterType).ToArray();
                 var proxyMethod = typeBuilder.DefineMethod(method.Name, MethodAttributes.Public | MethodAttributes.Virtual, CallingConventions.HasThis, method.ReturnType, parameterTypes);
@@ -56,7 +62,7 @@ namespace DR.Sleipner.CacheProxy.Generators
                 /* This below code creates a pass through proxy method that does nothing. It just forwards everything to real instance.
                  * This is used for void method and method that do no define a cachebehavior */
 
-                if (method.ReturnType == typeof(void)) //If a method is void or does not specify a caching behavior it just passes through directly to realInstance (we can't cache void output)
+                if (method.ReturnType == typeof(void))
                 {
                     methodBody.Emit(OpCodes.Ldarg_0);                           //Load this on the stack
                     methodBody.Emit(OpCodes.Ldfld, realInstanceField);          //Load the real instance on the stack
@@ -96,24 +102,25 @@ namespace DR.Sleipner.CacheProxy.Generators
                     methodBody.Emit(OpCodes.Stelem_Ref);                    //Store element in array
                 }
 
-                /* This generates a method call to ProxyCall in the base class. */
-
-                methodBody.Emit(OpCodes.Ldarg_0);                                                                       //Load this on the stack
-                methodBody.Emit(OpCodes.Ldstr, method.Name);                                                            //Load the first parameter value on the stack (name of the method being called)
-                methodBody.Emit(OpCodes.Ldloc, methodParameterArray);                                                   //Load the array on the stack
-                methodBody.Emit(OpCodes.Callvirt, proxyCallMethod.MakeGenericMethod(new []{method.ReturnType}));        //Call the interceptMethod
-                methodBody.Emit(OpCodes.Stloc, cachedItem);                                                             //Store the result of the method call in a local variable. This also pops it from the stack.
-                methodBody.Emit(OpCodes.Ldloc, cachedItem);                                                             //Load cached item on the stack
-                methodBody.Emit(OpCodes.Ret);                                                                           //Return to caller
+                /* This generates a method call to the proxyMethod handler field. */
+                methodBody.Emit(OpCodes.Ldarg_0);
+                methodBody.Emit(OpCodes.Ldfld, handlerField);                                                                   //Load this on the stack
+                methodBody.Emit(OpCodes.Ldstr, method.Name);                                                                    //Load the first parameter value on the stack (name of the method being called)
+                methodBody.Emit(OpCodes.Ldloc, methodParameterArray);                                                           //Load the array on the stack
+                methodBody.Emit(OpCodes.Callvirt, proxyCallMethod.MakeGenericMethod(new []{ method.ReturnType })); //Call the interceptMethod
+                methodBody.Emit(OpCodes.Stloc, cachedItem);                                                                     //Store the result of the method call in a local variable. This also pops it from the stack.
+                methodBody.Emit(OpCodes.Ldloc, cachedItem);                                                                     //Load cached item on the stack
+                methodBody.Emit(OpCodes.Ret);                                                                                   //Return to caller
 
                 typeBuilder.DefineMethodOverride(proxyMethod, method);
             }
 
             var createdType = typeBuilder.CreateType();
+            AssemblyBuilder.Save("SleipnerCacheProxies.dll");
             return createdType;
         }
 
-        private TypeBuilder getTypebuilder<T>(Type baseType, string name)
+        private TypeBuilder getTypebuilder<T>(string name)
         {
             var existing = ModuleBuilder.GetType(name, ignoreCase: true, throwOnError: false);
             var mutator = 1;
@@ -123,7 +130,7 @@ namespace DR.Sleipner.CacheProxy.Generators
                 mutatedname = name + "_" + (mutator++);
                 existing = ModuleBuilder.GetType(mutatedname, ignoreCase: true, throwOnError: false);
             }
-            return ModuleBuilder.DefineType(mutatedname, TypeAttributes.Class | TypeAttributes.Public, baseType, new[] { typeof(T) });
+            return ModuleBuilder.DefineType(mutatedname, TypeAttributes.Class | TypeAttributes.Public, null, new [] { typeof(T) });
         }
     }
 }

@@ -50,11 +50,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CachePolicyConfigureTest.cs" />
-    <Compile Include="CacheProxyGeneratorTest.cs" />
+    <None Include="CachePolicyConfigureTest.cs" />
+    <None Include="CacheProxyGeneratorTest.cs" />
     <Compile Include="DictionaryCacheTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SurgeProtectionTest.cs" />
+    <Compile Include="SleipnerProxyTest.cs" />
     <Compile Include="TestModel\AwesomeException.cs" />
     <Compile Include="TestModel\AwesomeImplementation.cs" />
     <Compile Include="TestModel\IAwesomeInterface.cs" />
