@@ -63,7 +63,7 @@
     <Compile Include="CacheProxy\IProxyGenerator.cs" />
     <Compile Include="ThrottledProxyHandler.cs" />
     <Compile Include="ProxyTypeMustBeInterfaceException.cs" />
-    <Compile Include="CacheProxy\Generators\ReflectionEmitProxyGenerator.cs" />
+    <Compile Include="CacheProxy\Generators\ILGenProxyGenerator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SleipnerProxy.cs" />
   </ItemGroup>

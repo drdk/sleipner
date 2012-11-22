@@ -7,12 +7,12 @@ using DR.Sleipner.CacheProviders;
 
 namespace DR.Sleipner.CacheProxy.Generators
 {
-    public class ReflectionEmitProxyGenerator : IProxyGenerator
+    public class ILGenProxyGenerator : IProxyGenerator
     {
         private static readonly AssemblyBuilder AssemblyBuilder;
         private static readonly ModuleBuilder ModuleBuilder;
 
-        static ReflectionEmitProxyGenerator()
+        static ILGenProxyGenerator()
         {
             var currentDomain = AppDomain.CurrentDomain;
             var dynamicAssemblyName = new AssemblyName

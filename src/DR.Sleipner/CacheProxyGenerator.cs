@@ -13,7 +13,7 @@ namespace DR.Sleipner
     public static class CacheProxyGenerator
     {
         private static readonly Dictionary<Type, Type> ProxyCache = new Dictionary<Type, Type>();
-        private static readonly IProxyGenerator ProxyGenerator = new ReflectionEmitProxyGenerator();
+        private static readonly IProxyGenerator ProxyGenerator = new ILGenProxyGenerator();
 
         public static T GetProxy<T>(T realInstance, ICacheProvider<T> cacheProvider) where T : class
         {
