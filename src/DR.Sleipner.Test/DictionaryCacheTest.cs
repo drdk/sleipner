@@ -38,8 +38,6 @@ namespace DR.Sleipner.Test
         [Test]
         public void TestReturnsStaleOutsidePeriod()
         {
-            CachePolicy.For<IDummyInterface>(a => a.GetProgramCards(string.Empty, default(DateTime))).CacheFor(2);
-
             ICacheProvider<IDummyInterface> cache = new DictionaryCache<IDummyInterface>();
 
             var bla = new CachePolicyProvider<IDummyInterface>();

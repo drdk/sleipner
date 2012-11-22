@@ -40,7 +40,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CacheConfiguration\CachePolicy.cs" />
     <Compile Include="CacheConfiguration\CachePolicyExtensions.cs" />
     <Compile Include="CacheConfiguration\CachePolicyProvider.cs" />
     <Compile Include="CacheConfiguration\ICachePolicyProvider.cs" />
@@ -58,14 +57,10 @@
     <Compile Include="CacheProxy\Syncronizer\RequestKey.cs" />
     <Compile Include="CacheProxy\Syncronizer\IRequestSyncronizer.cs" />
     <Compile Include="CacheProxy\Syncronizer\RequestSyncronizer.cs" />
-    <Compile Include="IDependancyResolver.cs" />
     <Compile Include="Model\CachedObject.cs" />
     <Compile Include="Model\CachedObjectState.cs" />
-    <Compile Include="CacheProxy\CacheProxyException.cs" />
-    <Compile Include="CacheProxy\CacheProxyBase.cs" />
     <Compile Include="CacheProxy\DelegateFactory.cs" />
     <Compile Include="CacheProxy\IProxyGenerator.cs" />
-    <Compile Include="CacheProxy\UnknownCacheBehaviorException.cs" />
     <Compile Include="ThrottledProxyHandler.cs" />
     <Compile Include="ProxyTypeMustBeInterfaceException.cs" />
     <Compile Include="CacheProxy\Generators\ReflectionEmitProxyGenerator.cs" />

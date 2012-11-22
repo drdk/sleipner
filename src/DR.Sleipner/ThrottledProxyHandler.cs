@@ -36,10 +36,9 @@ namespace DR.Sleipner
             var methodInfo = typeof(T).GetMethod(methodName, parameters.Select(a => a.GetType()).ToArray());
             var cachePolicy = _cachePolicyProvider.GetPolicy(methodInfo);
 
-            if (cachePolicy == null)
+            if (cachePolicy == null || cachePolicy.CacheDuration == 0)
             {
-                var realMethod = DelegateFactory.Create(methodInfo);
-                return (TResult)realMethod(_realInstance, parameters);
+                return GetRealResult<TResult>(methodInfo, parameters);
             }
 
             var cachedItem = _cacheProvider.GetItem<TResult>(methodInfo, cachePolicy, parameters) ?? new CachedObject<TResult>(CachedObjectState.None, null);
@@ -54,7 +53,6 @@ namespace DR.Sleipner
                 throw cachedItem.ThrownException;
             }
 
-            var delegateMethod = DelegateFactory.Create(methodInfo);
             var requestKey = new RequestKey(methodInfo, parameters);
             var waitFunction = _syncronizer.GetWaitFunction(requestKey);
 
@@ -69,18 +67,19 @@ namespace DR.Sleipner
 
             if (cachedItem.State == CachedObjectState.Stale)
             {
-                var task = new Task<TResult>(() => (TResult)delegateMethod(_realInstance, parameters));
+                var task = new Task<TResult>(() => GetRealResult<TResult>(methodInfo, parameters));
                 task.ContinueWith(taskState =>
                 {
                     try
                     {
-                        if (taskState.Exception != null)
+                        if (taskState.Exception != null && cachePolicy.BubbleExceptions)
                         {
-                            _cacheProvider.StoreItem(methodInfo, cachePolicy, taskState.Exception.InnerException, parameters);
+                            _cacheProvider.StoreException<TResult>(methodInfo, cachePolicy, taskState.Exception.InnerException, parameters);
                         }
                         else
                         {
-                            _cacheProvider.StoreItem(methodInfo, cachePolicy, taskState.Result, parameters);
+                            var itemToStore = taskState.Exception != null ? cachedItem.Object : taskState.Result;
+                            _cacheProvider.StoreItem(methodInfo, cachePolicy, itemToStore, parameters);                            
                         }
                     }
                     finally
@@ -97,27 +96,33 @@ namespace DR.Sleipner
             TResult realInstanceResult;
             try
             {
-                realInstanceResult = (TResult)delegateMethod(_realInstance, parameters);
+                realInstanceResult = GetRealResult<TResult>(methodInfo, parameters);
                 _cacheProvider.StoreItem(methodInfo, cachePolicy, realInstanceResult, parameters);
             }
-            /*catch (TargetInvocationException e)
+            catch (TargetInvocationException e)
             {
                 var inner = e.InnerException;
                 _preserveInternalException(inner);
-                _cacheProvider.StoreException<TResult>(methodInfo, inner, parameters);
+                _cacheProvider.StoreException<TResult>(methodInfo, cachePolicy, inner, parameters);
                 throw e.InnerException;
             }
             catch (Exception e)
             {
-                _cacheProvider.StoreException<TResult>(methodInfo, e, parameters);
+                _cacheProvider.StoreException<TResult>(methodInfo, cachePolicy, e, parameters);
                 throw;
-            }*/
+            }
             finally
             {
                 _syncronizer.Release(requestKey);
             }
 
             return realInstanceResult;
+        }
+
+        private TResult GetRealResult<TResult>(MethodInfo methodInfo, object[] parameters)
+        {
+            var delegateMethod = DelegateFactory.Create(methodInfo);
+            return (TResult) delegateMethod(_realInstance, parameters);
         }
     }
 }

@@ -116,7 +116,6 @@ namespace DR.Sleipner.CacheProxy.Generators
             }
 
             var createdType = typeBuilder.CreateType();
-            AssemblyBuilder.Save("SleipnerCacheProxies.dll");
             return createdType;
         }
 

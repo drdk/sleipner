@@ -19,7 +19,7 @@ namespace DR.Sleipner
         public T Object { get; private set; }
 
         private readonly IProxyHandler<T> _proxyHandler;
-        private readonly ICachePolicyProvider<T> _cachePolicyProvider;
+        public readonly ICachePolicyProvider<T> CachePolicyProvider;
 
         public SleipnerProxy(T realInstance, ICacheProvider<T> cacheProvider)
         {
@@ -31,15 +31,15 @@ namespace DR.Sleipner
             var proxyType = CacheProxyGenerator.GetProxyType<T>();
 
             _realInstance = realInstance;
-            _cachePolicyProvider = new CachePolicyProvider<T>();
-            _proxyHandler = new ThrottledProxyHandler<T>(_realInstance, _cachePolicyProvider, cacheProvider);
+            CachePolicyProvider = new CachePolicyProvider<T>();
+            _proxyHandler = new ThrottledProxyHandler<T>(_realInstance, CachePolicyProvider, cacheProvider);
             
             Object = (T)Activator.CreateInstance(proxyType, _realInstance, _proxyHandler);
         }
 
-        public void ConfigureCaching(Action<ICachePolicyProvider<T>> expression)
+        public void Configure(Action<ICachePolicyProvider<T>> expression)
         {
-            expression(_cachePolicyProvider);
+            expression(CachePolicyProvider);
         }
     }
 }

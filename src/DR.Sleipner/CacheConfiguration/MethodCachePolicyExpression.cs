@@ -26,9 +26,16 @@ namespace DR.Sleipner.CacheConfiguration
             return new MethodCachePolicyExpression<T>(_methodCachePolicies);
         }
 
-        public IMethodConfigurationExpression<T> SupressExceptions(bool enabled)
+        public IMethodConfigurationExpression<T> NoCache()
         {
-            SetForAll(a => a.SupressExceptions = enabled);
+            SetForAll(a => a.CacheDuration = 0);
+
+            return new MethodCachePolicyExpression<T>(_methodCachePolicies);
+        }
+
+        public IMethodConfigurationExpression<T> BubbleExceptionsWhenStale(bool enabled)
+        {
+            SetForAll(a => a.BubbleExceptions = enabled);
 
             return new MethodCachePolicyExpression<T>(_methodCachePolicies);
         }

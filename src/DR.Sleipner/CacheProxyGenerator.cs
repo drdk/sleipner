@@ -7,7 +7,6 @@ using System.Text;
 using DR.Sleipner.CacheProviders;
 using DR.Sleipner.CacheProxy;
 using DR.Sleipner.CacheProxy.Generators;
-using DR.Sleipner.CacheProxyCore;
 
 namespace DR.Sleipner
 {

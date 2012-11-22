@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using DR.Sleipner.CacheConfiguration;
 using DR.Sleipner.CacheProviders.DictionaryCache;
 using DR.Sleipner.Test.TestModel;
 using Moq;
@@ -15,45 +16,45 @@ namespace DR.Sleipner.Test
     [TestFixture]
     public class SurgeProtectionTest
     {
-        public int CallCounter;
-        public Mock<AwesomeImplementation> Mock = new Mock<AwesomeImplementation>();
-        public IAwesomeInterface Target;
-
+        public Mock<IAwesomeInterface> Mock = new Mock<IAwesomeInterface>();
+        
         [SetUp]
         public void SetUp()
         {
-            CallCounter = 0;
-
             Mock.Setup(x => x.ParameteredMethod(It.IsAny<string>(), It.IsAny<int>())).Returns((string s, int i) =>
             {
-                CallCounter++;
                 Thread.Sleep(2000);
                 return new[] { s, "giraf" };
             });
 
             Mock.Setup(x => x.ParameterlessMethod()).Returns(() =>
             {
-                CallCounter++;
                 Thread.Sleep(2000);
                 return new[] { "giraf" };
             });
-
-            ICacheProvider<IAwesomeInterface> cache = new DictionaryCache<IAwesomeInterface>();
-            Target = CacheProxyGenerator.GetProxy<IAwesomeInterface>(Mock.Object, cache);
         }
 
         [Test]
         public void It_should_not_make_duplicate_calls_while_cache_is_in_flight()
         {
+            var cacheProvider = new DictionaryCache<IAwesomeInterface>();
+            var sleipnerProxy = new SleipnerProxy<IAwesomeInterface>(Mock.Object, cacheProvider);
+            sleipnerProxy.Configure(a =>
+                                               {
+                                                   a.ForAll().CacheFor(10);
+                                               });
+
+            var target = sleipnerProxy.Object;
+
             var tasks = new[]
                             {
-                                Task<IEnumerable<string>>.Factory.StartNew(() => Target.ParameterlessMethod()),
-                                Task<IEnumerable<string>>.Factory.StartNew(() => Target.ParameterlessMethod()),
-                                Task<IEnumerable<string>>.Factory.StartNew(() => Target.ParameteredMethod("", 1)),
-                                Task<IEnumerable<string>>.Factory.StartNew(() => Target.ParameteredMethod("", 2)),
-                                Task<IEnumerable<string>>.Factory.StartNew(() => Target.ParameteredMethod("", 2)),
-                                Task<IEnumerable<string>>.Factory.StartNew(() => Target.ParameterlessMethod()),
-                                Task<IEnumerable<string>>.Factory.StartNew(() => Target.ParameterlessMethod())
+                                Task<IEnumerable<string>>.Factory.StartNew(() => target.ParameterlessMethod()),
+                                Task<IEnumerable<string>>.Factory.StartNew(() => target.ParameterlessMethod()),
+                                Task<IEnumerable<string>>.Factory.StartNew(() => target.ParameteredMethod("", 1)),
+                                Task<IEnumerable<string>>.Factory.StartNew(() => target.ParameteredMethod("", 2)),
+                                Task<IEnumerable<string>>.Factory.StartNew(() => target.ParameteredMethod("", 2)),
+                                Task<IEnumerable<string>>.Factory.StartNew(() => target.ParameterlessMethod()),
+                                Task<IEnumerable<string>>.Factory.StartNew(() => target.ParameterlessMethod())
                             };
 
             Task.WaitAll(tasks);

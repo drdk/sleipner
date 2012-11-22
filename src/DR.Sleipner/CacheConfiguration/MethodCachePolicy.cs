@@ -9,6 +9,6 @@ namespace DR.Sleipner.CacheConfiguration
     public class MethodCachePolicy
     {
         public int CacheDuration;
-        public bool SupressExceptions;
+        public bool BubbleExceptions;
     }
 }
