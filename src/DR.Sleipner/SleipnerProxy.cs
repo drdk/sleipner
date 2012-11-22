@@ -13,7 +13,7 @@ using DR.Sleipner.Model;
 
 namespace DR.Sleipner
 {
-    public class SleipnerProxy<T>    where T : class
+    public class SleipnerProxy<T> where T : class
     {
         private readonly T _realInstance;
         public T Object { get; private set; }
