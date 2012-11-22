@@ -11,7 +11,7 @@ namespace DR.Sleipner.CacheProviders
 {
     public abstract class CacheProviderBase<TImpl> where TImpl : class
     {
-        protected string GenerateStringKey(MethodInfo methodInfo, object[] parameters)
+        public static string GenerateStringKey(MethodInfo methodInfo, object[] parameters)
         {
             var parameterValues = parameters.Select(a => a is string ? "\"" + a + "\"" : a);
 
