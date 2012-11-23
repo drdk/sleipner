@@ -42,7 +42,7 @@ namespace DR.Sleipner.CacheProviders.DictionaryCache
         {
             var cacheKey = new DictionaryCacheKey(methodInfo.Name, parameters.ToArray());
 
-            _cache[cacheKey] = new DictionaryCachedItem(exception, TimeSpan.FromSeconds(2));
+            _cache[cacheKey] = new DictionaryCachedItem(exception, TimeSpan.FromSeconds(cachePolicy.ExceptionCacheDuration));
         }
 
         public void Purge(Expression<Action<T>> action)
