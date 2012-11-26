@@ -22,19 +22,10 @@ namespace DR.Sleipner.CacheConfiguration
 
         public static IMethodConfigurationExpression<T> ForAll<T>(this ICachePolicyProvider<T> provider) where T : class
         {
-            //Create a bunch of configs for all methods on T:
-            var configs = typeof (T).GetMethods().Select(a => new
-                                                                  {
-                                                                      methodInfo = a,
-                                                                      cachePolicy = new MethodCachePolicy()
-                                                                  }).ToList();
+            var defaultPolicy = new MethodCachePolicy();
+            provider.SetDefaultPolicy(defaultPolicy);
 
-            foreach (var config in configs)
-            {
-                provider.SetPolicy(config.methodInfo, config.cachePolicy);
-            }
-
-            return new MethodCachePolicyExpression<T>(configs.Select(a => a.cachePolicy).ToList());
+            return new MethodCachePolicyExpression<T>(defaultPolicy);
         }
     }
 }

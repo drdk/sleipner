@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 
 namespace DR.Sleipner.CacheProviders.DictionaryCache
 {
     public class DictionaryCacheKey
     {
-        private readonly object _primaryKey;
+        private readonly MethodInfo _primaryKey;
         private readonly object[] _cacheKeys;
-        public DictionaryCacheKey(object primaryKey, object[] cacheKeys)
+        public DictionaryCacheKey(MethodInfo primaryKey, object[] cacheKeys)
         {
             _primaryKey = primaryKey;
             _cacheKeys = cacheKeys;

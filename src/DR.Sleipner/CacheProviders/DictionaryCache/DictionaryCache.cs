@@ -16,7 +16,7 @@ namespace DR.Sleipner.CacheProviders.DictionaryCache
 
         public CachedObject<TObject> GetItem<TObject>(MethodInfo methodInfo, MethodCachePolicy cachePolicy, IEnumerable<object> parameters)
         {
-            var cacheKey = new DictionaryCacheKey(methodInfo.Name, parameters.ToArray());
+            var cacheKey = new DictionaryCacheKey(methodInfo, parameters.ToArray());
             if(_cache.ContainsKey(cacheKey))
             {
                 var cachedObject = _cache[cacheKey];
@@ -34,13 +34,13 @@ namespace DR.Sleipner.CacheProviders.DictionaryCache
 
         public void StoreItem<TObject>(MethodInfo methodInfo, MethodCachePolicy cachePolicy, TObject item, IEnumerable<object> parameters)
         {
-            var cacheKey = new DictionaryCacheKey(methodInfo.Name, parameters.ToArray());
+            var cacheKey = new DictionaryCacheKey(methodInfo, parameters.ToArray());
             _cache[cacheKey] = new DictionaryCachedItem(item, TimeSpan.FromSeconds(cachePolicy.CacheDuration));
         }
 
         public void StoreException<TObject>(MethodInfo methodInfo, MethodCachePolicy cachePolicy, Exception exception, IEnumerable<object> parameters)
         {
-            var cacheKey = new DictionaryCacheKey(methodInfo.Name, parameters.ToArray());
+            var cacheKey = new DictionaryCacheKey(methodInfo, parameters.ToArray());
 
             _cache[cacheKey] = new DictionaryCachedItem(exception, TimeSpan.FromSeconds(cachePolicy.ExceptionCacheDuration));
         }

@@ -42,6 +42,10 @@ namespace DR.Sleipner
         public TResult HandleRequest<TResult>(string methodName, object[] parameters)
         {
             var methodInfo = typeof(T).GetMethod(methodName, parameters.Select(a => a.GetType()).ToArray());
+            if (methodInfo.IsGenericMethod)
+            {
+                methodInfo = methodInfo.MakeGenericMethod(typeof (TResult).GetGenericArguments());
+            }
             var cachePolicy = _cachePolicyProvider.GetPolicy(methodInfo);
 
             if (cachePolicy == null || cachePolicy.CacheDuration == 0)

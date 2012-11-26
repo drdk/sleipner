@@ -19,6 +19,12 @@ namespace DR.Sleipner.CacheProviders
             sb.Append(methodInfo.DeclaringType.FullName);
             sb.Append(".");
             sb.Append(methodInfo.Name);
+            if (methodInfo.IsGenericMethod)
+            {
+                sb.Append("<");
+                sb.Append(string.Join(",", methodInfo.GetGenericArguments().Select(a => a.Name)));
+                sb.Append(">");
+            }
             sb.Append("(");
             sb.Append(string.Join(", ", parameterValues));
             sb.Append(")");

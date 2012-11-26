@@ -10,5 +10,6 @@ namespace DR.Sleipner.CacheConfiguration
     {
         MethodCachePolicy GetPolicy(MethodInfo methodInfo);
         void SetPolicy(MethodInfo methodInfo, MethodCachePolicy cachePolicy);
+        void SetDefaultPolicy(MethodCachePolicy cachePolicy);
     }
 }
