@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text;
 using DR.Sleipner.CacheConfiguration;
 using DR.Sleipner.CacheProviders;
+using DR.Sleipner.CacheProxy;
 using DR.Sleipner.EnyimMemcachedProvider.Model;
 using DR.Sleipner.Model;
 using Enyim.Caching;
@@ -13,7 +14,7 @@ using Enyim.Caching.Memcached;
 
 namespace DR.Sleipner.EnyimMemcachedProvider
 {
-    public class EnyimMemcachedProvider<TImpl> : CacheProviderBase<TImpl>, ICacheProvider<TImpl> where TImpl : class
+    public class EnyimMemcachedProvider<T> : ICacheProvider<T> where T : class
     {
         private readonly IMemcachedClient _client;
 
@@ -22,40 +23,40 @@ namespace DR.Sleipner.EnyimMemcachedProvider
             _client = client;
         }
 
-        public CachedObject<TObject> GetItem<TObject>(MethodInfo methodInfo, MethodCachePolicy cachePolicy, IEnumerable<object> parameters)
+        public CachedObject<TResult> GetItem<TResult>(ProxyRequest<T, TResult> proxyRequest, MethodCachePolicy cachePolicy)
         {
-            var key = GenerateStringKey(methodInfo, parameters.ToArray());
+            var key = proxyRequest.CreateHash();
 
             object value;
             if (_client.TryGet(key, out value))
             {
-                var cachedObject = value as MemcachedObject<TObject>;
+                var cachedObject = value as MemcachedObject<TResult>;
                 if (cachedObject == null)
                 {
-                    return new CachedObject<TObject>(CachedObjectState.None, null);
+                    return new CachedObject<TResult>(CachedObjectState.None, null);
                 }
 
                 if (cachedObject.IsException && cachedObject.Created.AddSeconds(cachePolicy.ExceptionCacheDuration) > DateTime.Now)
                 {
-                    return new CachedObject<TObject>(CachedObjectState.Exception, cachedObject.Exception);
+                    return new CachedObject<TResult>(CachedObjectState.Exception, cachedObject.Exception);
                 }
                 else if (cachedObject.IsException)
                 {
-                    return new CachedObject<TObject>(CachedObjectState.None, null);
+                    return new CachedObject<TResult>(CachedObjectState.None, null);
                 }
 
                 var fresh = cachedObject.Created.AddSeconds(cachePolicy.CacheDuration) > DateTime.Now;
                 var state = fresh ? CachedObjectState.Fresh : CachedObjectState.Stale;
-                return new CachedObject<TObject>(state, cachedObject.Object);
+                return new CachedObject<TResult>(state, cachedObject.Object);
             }
 
-            return new CachedObject<TObject>(CachedObjectState.None, null);
+            return new CachedObject<TResult>(CachedObjectState.None, null);
         }
 
-        public void StoreItem<TObject>(MethodInfo methodInfo, MethodCachePolicy cachePolicy, TObject item, IEnumerable<object> parameters)
+        public void StoreItem<TResult>(ProxyRequest<T, TResult> proxyRequest, MethodCachePolicy cachePolicy, TResult item)
         {
-            var key = GenerateStringKey(methodInfo, parameters.ToArray());
-            var cachedObject = new MemcachedObject<TObject>()
+            var key = proxyRequest.CreateHash();
+            var cachedObject = new MemcachedObject<TResult>()
                                    {
                                        Created = DateTime.Now,
                                        Object = item
@@ -64,10 +65,10 @@ namespace DR.Sleipner.EnyimMemcachedProvider
             _client.Store(StoreMode.Set, key, cachedObject);
         }
 
-        public void StoreException<TObject>(MethodInfo methodInfo, MethodCachePolicy cachePolicy, Exception exception, IEnumerable<object> parameters)
+        public void StoreException<TResult>(ProxyRequest<T, TResult> proxyRequest, MethodCachePolicy cachePolicy, Exception exception)
         {
-            var key = GenerateStringKey(methodInfo, parameters.ToArray());
-            var cachedObject = new MemcachedObject<TObject>()
+            var key = proxyRequest.CreateHash();
+            var cachedObject = new MemcachedObject<TResult>()
             {
                 Created = DateTime.Now,
                 IsException = true,
@@ -77,12 +78,12 @@ namespace DR.Sleipner.EnyimMemcachedProvider
             _client.Store(StoreMode.Set, key, cachedObject);
         }
 
-        public void Purge(Expression<Action<TImpl>> action)
+        public void Purge(Expression<Action<T>> action)
         {
             throw new NotImplementedException();
         }
 
-        public CachedObjectState GetItemState(Expression<Action<TImpl>> action)
+        public CachedObjectState GetItemState(Expression<Action<T>> action)
         {
             throw new NotImplementedException();
         }

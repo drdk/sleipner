@@ -51,6 +51,7 @@
   <ItemGroup>
     <Compile Include="EnyimMemcachedProviderGetItemTests.cs" />
     <Compile Include="EnyimMemcachedProviderStoreItemTests.cs" />
+    <Compile Include="HashAlgorithmTest.cs" />
     <Compile Include="IAwesomeInterface.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

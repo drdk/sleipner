@@ -6,6 +6,7 @@ using System.Threading;
 using DR.Sleipner.CacheConfiguration;
 using DR.Sleipner.CacheProviders;
 using DR.Sleipner.CacheProviders.DictionaryCache;
+using DR.Sleipner.CacheProxy;
 using DR.Sleipner.Model;
 using DR.Sleipner.Test.TestModel;
 using Moq;
@@ -63,14 +64,14 @@ namespace DR.Sleipner.Test
             });
 
             var methodReturnValue = new[] { "", "" }.ToList();
-            instanceMock.Setup(a => a.GenericMethod<string>()).Returns(methodReturnValue);
-            instanceMock.Setup(a => a.GenericMethod<int>()).Returns(new []{1,2});
+            instanceMock.Setup(a => a.GenericMethod<string>("", 0)).Returns(methodReturnValue);
+            instanceMock.Setup(a => a.GenericMethod<int>("", 0)).Returns(new[] { 1, 2 });
 
-            proxy.Object.GenericMethod<int>();
-            proxy.Object.GenericMethod<string>();
+            proxy.Object.GenericMethod<int>("", 0);
+            proxy.Object.GenericMethod<string>("", 0);
             //proxy.Object.GenericMethod<string>();
 
-            instanceMock.Verify(a => a.GenericMethod<string>(), Times.Once());
+            instanceMock.Verify(a => a.GenericMethod<string>("", 0), Times.Once());
         }
 
         [Test]
@@ -107,19 +108,20 @@ namespace DR.Sleipner.Test
         {
             var instanceMock = new Mock<IAwesomeInterface>();
             var cacheProviderMock = new Mock<ICacheProvider<IAwesomeInterface>>();
+
             var sleipner = new SleipnerProxy<IAwesomeInterface>(instanceMock.Object, cacheProviderMock.Object);
             sleipner.Configure(a =>
                                    {
                                        a.For(b => b.ParameterlessMethod()).CacheFor(10);
                                    });
-            
-            var methodInfo = typeof(IAwesomeInterface).GetMethod("ParameterlessMethod");
-            var cachePolicy = sleipner.CachePolicyProvider.GetPolicy(methodInfo);
-            var parameters = new object[0];
+
+            var proxyContext = ProxyRequest<IAwesomeInterface>.FromExpression(a => a.ParameterlessMethod());
+            var cachePolicy = sleipner.CachePolicyProvider.GetPolicy(proxyContext.Method);
+
             IEnumerable<string> result = new[] { "", "" };
             var exception = new Exception();
 
-            cacheProviderMock.Setup(a => a.GetItem<IEnumerable<string>>(methodInfo, cachePolicy, parameters)).Returns(new CachedObject<IEnumerable<string>>(CachedObjectState.Stale, result));
+            cacheProviderMock.Setup(a => a.GetItem(proxyContext, cachePolicy)).Returns(new CachedObject<IEnumerable<string>>(CachedObjectState.Stale, result));
             instanceMock.Setup(a => a.ParameterlessMethod()).Throws(exception);
 
             sleipner.Object.ParameterlessMethod();
@@ -127,9 +129,9 @@ namespace DR.Sleipner.Test
             Thread.Sleep(1000);
 
             instanceMock.Verify(a => a.ParameterlessMethod(), Times.Once());
-            cacheProviderMock.Verify(a => a.GetItem<IEnumerable<string>>(methodInfo, cachePolicy, parameters), Times.Once());
-            cacheProviderMock.Verify(a => a.StoreItem(methodInfo, cachePolicy, result, parameters), Times.Once());
-            cacheProviderMock.Verify(a => a.StoreException<IEnumerable<string>>(methodInfo, cachePolicy, exception, parameters), Times.Never());
+            cacheProviderMock.Verify(a => a.GetItem(proxyContext, cachePolicy), Times.Once());
+            cacheProviderMock.Verify(a => a.StoreItem(proxyContext, cachePolicy, result), Times.Once());
+            cacheProviderMock.Verify(a => a.StoreException(proxyContext, cachePolicy, exception), Times.Never());
         }
 
         [Test]
@@ -143,13 +145,14 @@ namespace DR.Sleipner.Test
                 a.For(b => b.ParameterlessMethod()).CacheFor(10).BubbleExceptionsWhenStale(true);
             });
 
-            var methodInfo = typeof(IAwesomeInterface).GetMethod("ParameterlessMethod");
-            var cachePolicy = sleipner.CachePolicyProvider.GetPolicy(methodInfo);
+            var proxyContext = ProxyRequest<IAwesomeInterface>.FromExpression(a => a.ParameterlessMethod());
+            var cachePolicy = sleipner.CachePolicyProvider.GetPolicy(proxyContext.Method);
+
             var parameters = new object[0];
             IEnumerable<string> result = new[] { "", "" };
             var exception = new AwesomeException();
 
-            cacheProviderMock.Setup(a => a.GetItem<IEnumerable<string>>(methodInfo, cachePolicy, parameters)).Returns(new CachedObject<IEnumerable<string>>(CachedObjectState.Stale, result));
+            cacheProviderMock.Setup(a => a.GetItem<IEnumerable<string>>(proxyContext, cachePolicy)).Returns(new CachedObject<IEnumerable<string>>(CachedObjectState.Stale, result));
             instanceMock.Setup(a => a.ParameterlessMethod()).Throws(exception);
 
             sleipner.Object.ParameterlessMethod();
@@ -157,9 +160,9 @@ namespace DR.Sleipner.Test
             Thread.Sleep(1000);
 
             instanceMock.Verify(a => a.ParameterlessMethod(), Times.Once());
-            cacheProviderMock.Verify(a => a.GetItem<IEnumerable<string>>(methodInfo, cachePolicy, parameters), Times.Once());
-            cacheProviderMock.Verify(a => a.StoreItem(methodInfo, cachePolicy, result, parameters), Times.Never());
-            cacheProviderMock.Verify(a => a.StoreException <IEnumerable<string>>(methodInfo, cachePolicy, exception, parameters), Times.Once());
+            cacheProviderMock.Verify(a => a.GetItem<IEnumerable<string>>(proxyContext, cachePolicy), Times.Once());
+            cacheProviderMock.Verify(a => a.StoreItem(proxyContext, cachePolicy, result), Times.Never());
+            cacheProviderMock.Verify(a => a.StoreException<IEnumerable<string>>(proxyContext, cachePolicy, exception), Times.Once());
         }
     }
 }

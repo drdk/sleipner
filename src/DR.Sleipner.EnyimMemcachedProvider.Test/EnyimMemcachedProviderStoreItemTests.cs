@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using DR.Sleipner.CacheConfiguration;
 using DR.Sleipner.CacheProviders;
+using DR.Sleipner.CacheProxy;
 using DR.Sleipner.EnyimMemcachedProvider.Model;
 using Enyim.Caching;
 using Enyim.Caching.Memcached;
@@ -21,17 +22,16 @@ namespace DR.Sleipner.EnyimMemcachedProvider.Test
             var memcachedMock = new Mock<IMemcachedClient>();
             var enyimProvider = new EnyimMemcachedProvider<IAwesomeInterface>(memcachedMock.Object);
 
-            var methodInfo = typeof(IAwesomeInterface).GetMethod("ParameterlessMethod");
             var cachePolicy = new MethodCachePolicy()
             {
                 CacheDuration = 10
             };
 
-            var parameters = new object[] {"", 1};
-            var hashKey = CacheProviderBase<IAwesomeInterface>.GenerateStringKey(methodInfo, parameters);
+            var proxyContext = ProxyRequest<IAwesomeInterface>.FromExpression(a => a.ParameteredMethod("", 1));
+            var hashKey = proxyContext.CreateHash();
 
             var objectToStore = new[] {"", ""}.AsEnumerable();
-            enyimProvider.StoreItem(methodInfo, cachePolicy, objectToStore, parameters);
+            enyimProvider.StoreItem(proxyContext, cachePolicy, objectToStore);
 
             memcachedMock.Verify(a => a.Store(StoreMode.Set, hashKey, It.IsAny<MemcachedObject<IEnumerable<string>>>()), Times.Once()); //We can't test properly if it created the object correctly.
         }
@@ -42,16 +42,15 @@ namespace DR.Sleipner.EnyimMemcachedProvider.Test
             var memcachedMock = new Mock<IMemcachedClient>();
             var enyimProvider = new EnyimMemcachedProvider<IAwesomeInterface>(memcachedMock.Object);
 
-            var methodInfo = typeof(IAwesomeInterface).GetMethod("ParameterlessMethod");
             var cachePolicy = new MethodCachePolicy()
             {
                 CacheDuration = 10
             };
 
-            var parameters = new object[] { "", 1 };
-            var hashKey = CacheProviderBase<IAwesomeInterface>.GenerateStringKey(methodInfo, parameters);
+            var proxyContext = ProxyRequest<IAwesomeInterface>.FromExpression(a => a.ParameteredMethod("", 1));
+            var hashKey = proxyContext.CreateHash();
 
-            enyimProvider.StoreException<IEnumerable<string>>(methodInfo, cachePolicy, new Exception(), parameters);
+            enyimProvider.StoreException<IEnumerable<string>>(proxyContext, cachePolicy, new Exception());
 
             memcachedMock.Verify(a => a.Store(StoreMode.Set, hashKey, It.IsAny<MemcachedObject<IEnumerable<string>>>()), Times.Once()); //We can't test properly if it created the object correctly.
         }

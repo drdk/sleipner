@@ -50,6 +50,7 @@
     <Compile Include="EnyimMemcachedProvider.cs" />
     <Compile Include="Model\MemcachedObject.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ProxyRequestExtensions.cs" />
     <Compile Include="Transcoders\NewtonsoftProvider.cs" />
     <Compile Include="Transcoders\NewtonsoftTranscoder.cs" />
   </ItemGroup>

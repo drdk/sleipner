@@ -41,19 +41,15 @@ namespace DR.Sleipner
 
         public TResult HandleRequest<TResult>(string methodName, object[] parameters)
         {
-            var methodInfo = typeof(T).GetMethod(methodName, parameters.Select(a => a.GetType()).ToArray());
-            if (methodInfo.IsGenericMethod)
-            {
-                methodInfo = methodInfo.MakeGenericMethod(typeof (TResult).GetGenericArguments());
-            }
-            var cachePolicy = _cachePolicyProvider.GetPolicy(methodInfo);
+            var proxyContext = new ProxyRequest<T, TResult>(methodName, parameters);
+            var cachePolicy = _cachePolicyProvider.GetPolicy(proxyContext.Method);
 
             if (cachePolicy == null || cachePolicy.CacheDuration == 0)
             {
-                return GetRealResult<TResult>(methodInfo, parameters);
+                return GetRealResult(proxyContext);
             }
 
-            var cachedItem = _cacheProvider.GetItem<TResult>(methodInfo, cachePolicy, parameters) ?? new CachedObject<TResult>(CachedObjectState.None, null);
+            var cachedItem = _cacheProvider.GetItem(proxyContext, cachePolicy) ?? new CachedObject<TResult>(CachedObjectState.None, null);
 
             if (cachedItem.State == CachedObjectState.Fresh)
             {
@@ -65,7 +61,7 @@ namespace DR.Sleipner
                 throw cachedItem.ThrownException;
             }
 
-            var requestKey = new RequestKey(methodInfo, parameters);
+            var requestKey = new RequestKey(proxyContext.Method, proxyContext.Parameters);
             var waitFunction = _syncronizer.GetWaitFunction(requestKey);
 
             if (waitFunction != null)
@@ -79,7 +75,7 @@ namespace DR.Sleipner
 
             if (cachedItem.State == CachedObjectState.Stale)
             {
-                var task = new Task<TResult>(() => GetRealResult<TResult>(methodInfo, parameters));
+                var task = new Task<TResult>(() => GetRealResult(proxyContext));
                 task.ContinueWith(taskState =>
                 {
                     try
@@ -92,12 +88,12 @@ namespace DR.Sleipner
                                 _preserveInternalException(exception);
                             }
 
-                            _cacheProvider.StoreException<TResult>(methodInfo, cachePolicy, exception, parameters);
+                            _cacheProvider.StoreException<TResult>(proxyContext, cachePolicy, exception);
                         }
                         else
                         {
                             var itemToStore = taskState.Exception != null ? cachedItem.Object : taskState.Result;
-                            _cacheProvider.StoreItem(methodInfo, cachePolicy, itemToStore, parameters);                            
+                            _cacheProvider.StoreItem(proxyContext, cachePolicy, itemToStore);                            
                         }
                     }
                     finally
@@ -114,19 +110,19 @@ namespace DR.Sleipner
             TResult realInstanceResult;
             try
             {
-                realInstanceResult = GetRealResult<TResult>(methodInfo, parameters);
-                _cacheProvider.StoreItem(methodInfo, cachePolicy, realInstanceResult, parameters);
+                realInstanceResult = GetRealResult(proxyContext);
+                _cacheProvider.StoreItem(proxyContext, cachePolicy, realInstanceResult);
             }
             catch (TargetInvocationException e)
             {
                 var inner = e.InnerException;
                 _preserveInternalException(inner);
-                _cacheProvider.StoreException<TResult>(methodInfo, cachePolicy, inner, parameters);
+                _cacheProvider.StoreException(proxyContext, cachePolicy, inner);
                 throw e.InnerException;
             }
             catch (Exception e)
             {
-                _cacheProvider.StoreException<TResult>(methodInfo, cachePolicy, e, parameters);
+                _cacheProvider.StoreException(proxyContext, cachePolicy, e);
                 throw;
             }
             finally
@@ -137,10 +133,10 @@ namespace DR.Sleipner
             return realInstanceResult;
         }
 
-        private TResult GetRealResult<TResult>(MethodInfo methodInfo, object[] parameters)
+        private TResult GetRealResult<TResult>(ProxyRequest<T, TResult> proxyRequest)
         {
-            var delegateMethod = DelegateFactory.Create(methodInfo);
-            return (TResult) delegateMethod(_realInstance, parameters);
+            var delegateMethod = DelegateFactory.Create(proxyRequest.Method);
+            return (TResult)delegateMethod(_realInstance, proxyRequest.Parameters);
         }
     }
 }

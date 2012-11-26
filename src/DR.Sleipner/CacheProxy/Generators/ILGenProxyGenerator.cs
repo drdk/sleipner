@@ -57,6 +57,7 @@ namespace DR.Sleipner.CacheProxy.Generators
             {
                 var parameterTypes = method.GetParameters().Select(a => a.ParameterType).ToArray();
                 var proxyMethod = typeBuilder.DefineMethod(method.Name, MethodAttributes.Public | MethodAttributes.Virtual, CallingConventions.HasThis, method.ReturnType, parameterTypes);
+
                 if (method.IsGenericMethod)
                 {
                     var genericTypes = method.GetGenericArguments();

@@ -58,6 +58,42 @@ namespace DR.Sleipner.Helpers
 
             return outermostExpression.Method;
         }
-    }
 
+        public static object[] GetParameter<T, TResult>(Expression<Func<T, TResult>> expression)
+        {
+            var outermostExpression = expression.Body as MethodCallExpression;
+            if (outermostExpression == null)
+            {
+                throw new ArgumentException("Invalid Expression. Expression should consist of a Method call only.");
+            }
+
+            var args = outermostExpression.Arguments.Select(a => FindValue(a)).ToArray();
+
+            return args;
+        }
+
+        private static object FindValue(Expression expr)
+        {
+            if (expr is ConstantExpression)
+            {
+                var constant = expr as ConstantExpression;
+                return constant.Value;
+            }
+            else if (expr is MemberExpression)
+            {
+                return GetValue(expr as MemberExpression);
+            }
+
+            throw new ArgumentException("Expression type could not be determined", "expr");
+        }
+
+        private static object GetValue(MemberExpression member)
+        {
+            var objectMember = Expression.Convert(member, typeof(object));
+            var getterLambda = Expression.Lambda<Func<object>>(objectMember);
+            var getter = getterLambda.Compile();
+
+            return getter();
+        }
+    }
 }

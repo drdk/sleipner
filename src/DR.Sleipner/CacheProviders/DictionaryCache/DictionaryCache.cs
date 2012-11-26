@@ -10,37 +10,37 @@ using DR.Sleipner.Model;
 
 namespace DR.Sleipner.CacheProviders.DictionaryCache
 {
-    public class DictionaryCache<T> : CacheProviderBase<T>, ICacheProvider<T> where T : class
+    public class DictionaryCache<T> : ICacheProvider<T> where T : class
     {
         private readonly IDictionary<DictionaryCacheKey, DictionaryCachedItem> _cache = new ConcurrentDictionary<DictionaryCacheKey, DictionaryCachedItem>();
 
-        public CachedObject<TObject> GetItem<TObject>(MethodInfo methodInfo, MethodCachePolicy cachePolicy, IEnumerable<object> parameters)
+        public CachedObject<TResult> GetItem<TResult>(ProxyRequest<T, TResult> proxyRequest, MethodCachePolicy cachePolicy)
         {
-            var cacheKey = new DictionaryCacheKey(methodInfo, parameters.ToArray());
+            var cacheKey = new DictionaryCacheKey(proxyRequest.Method, proxyRequest.Parameters);
             if(_cache.ContainsKey(cacheKey))
             {
                 var cachedObject = _cache[cacheKey];
 
                 if(cachedObject.ThrownException != null)
                 {
-                    return new CachedObject<TObject>(CachedObjectState.Exception, cachedObject.ThrownException);
+                    return new CachedObject<TResult>(CachedObjectState.Exception, cachedObject.ThrownException);
                 }
 
-                return new CachedObject<TObject>(cachedObject.IsExpired ? CachedObjectState.Stale : CachedObjectState.Fresh, (TObject)cachedObject.Object);
+                return new CachedObject<TResult>(cachedObject.IsExpired ? CachedObjectState.Stale : CachedObjectState.Fresh, (TResult)cachedObject.Object);
             }
 
-            return new CachedObject<TObject>(CachedObjectState.None, null);
+            return new CachedObject<TResult>(CachedObjectState.None, null);
         }
 
-        public void StoreItem<TObject>(MethodInfo methodInfo, MethodCachePolicy cachePolicy, TObject item, IEnumerable<object> parameters)
+        public void StoreItem<TResult>(ProxyRequest<T, TResult> proxyRequest, MethodCachePolicy cachePolicy, TResult item)
         {
-            var cacheKey = new DictionaryCacheKey(methodInfo, parameters.ToArray());
+            var cacheKey = new DictionaryCacheKey(proxyRequest.Method, proxyRequest.Parameters);
             _cache[cacheKey] = new DictionaryCachedItem(item, TimeSpan.FromSeconds(cachePolicy.CacheDuration));
         }
 
-        public void StoreException<TObject>(MethodInfo methodInfo, MethodCachePolicy cachePolicy, Exception exception, IEnumerable<object> parameters)
+        public void StoreException<TResult>(ProxyRequest<T, TResult> proxyRequest, MethodCachePolicy cachePolicy, Exception exception)
         {
-            var cacheKey = new DictionaryCacheKey(methodInfo, parameters.ToArray());
+            var cacheKey = new DictionaryCacheKey(proxyRequest.Method, proxyRequest.Parameters);
 
             _cache[cacheKey] = new DictionaryCachedItem(exception, TimeSpan.FromSeconds(cachePolicy.ExceptionCacheDuration));
         }
