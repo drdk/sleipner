@@ -28,7 +28,15 @@ namespace DR.Sleipner
             _cacheProvider = cacheProvider;
 
             var preserveStackTrace = typeof(Exception).GetMethod("InternalPreserveStackTrace", BindingFlags.Instance | BindingFlags.NonPublic);
-            _preserveInternalException = (Action<Exception>)Delegate.CreateDelegate(typeof(Action<Exception>), preserveStackTrace);
+            if (preserveStackTrace != null)
+            {
+                _preserveInternalException = (Action<Exception>) Delegate.CreateDelegate(typeof (Action<Exception>), preserveStackTrace);
+            }
+            else
+            {
+                //This is to handle mono not having the InternalPreserveStackTrace method
+                _preserveInternalException = e => { };
+            }
         }
 
         public TResult HandleRequest<TResult>(string methodName, object[] parameters)
@@ -74,7 +82,13 @@ namespace DR.Sleipner
                     {
                         if (taskState.Exception != null && cachePolicy.BubbleExceptions)
                         {
-                            _cacheProvider.StoreException<TResult>(methodInfo, cachePolicy, taskState.Exception.InnerException, parameters);
+                            var exception = taskState.Exception.InnerException;
+                            if (exception is TargetInvocationException)
+                            {
+                                _preserveInternalException(exception);
+                            }
+
+                            _cacheProvider.StoreException<TResult>(methodInfo, cachePolicy, exception, parameters);
                         }
                         else
                         {
