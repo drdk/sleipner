@@ -29,7 +29,7 @@ By default Sleipner comes with an Enyim Memcached-based Memcached Provider (the 
 You then create a SleipnerProxy object that wraps around your Repository or Service class. Your Repo/Service must have an interface that specifies it's communication contract.
 
 ```csharp
-var myAwesomeProxy = new SleipnerPRoxy<IAwesomeService>(
+var myAwesomeProxy = new SleipnerProxy<IAwesomeService>(
     new AwesomeService(),
     new EnyimMemcachedProvider<IAwesomeService>(_memcachedClientInstance)
 );
@@ -42,3 +42,5 @@ myAwesomeProxy.Configure(a => {
 var myAwesomeService = myAwesomeProxy.Object; //the myAwesomeService object is now backed in memcached.
 
 ```
+## Need to know
+Remember to adhere to the recommended usage pattern for MemcachedClient. It is a heavy object and should be kept in a static context. While the SleipnerProxy-class is not heavy to initialize, there is no reason not to keep it in a static context as well. Most IoC Frameworks (such as StructureMap and Ninject) supports doing this by configuration. Alternatively you can keep the instances as static members of your IOC Initialization class or in your Application-file (in web apps).
