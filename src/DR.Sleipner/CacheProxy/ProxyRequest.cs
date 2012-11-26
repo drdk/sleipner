@@ -14,32 +14,22 @@ namespace DR.Sleipner.CacheProxy
         public MethodInfo Method;
         public object[] Parameters;
 
-        public ProxyRequest(string methodName, object[] parameters)
+        public ProxyRequest(MethodInfo methodInfo, object[] parameters)
         {
-            Method = typeof(T).GetMethod(methodName, parameters.Select(a => a.GetType()).ToArray());
-            if (Method == null)
+            Method = methodInfo;
+            if (Method.DeclaringType != typeof(T))
             {
-                throw new ArgumentException("Could not find the specified method");
-            }
-                
-            if (Method.IsGenericMethod)
-            {
-                Method = Method.MakeGenericMethod(typeof (TResult).GetGenericArguments());
-            }
-
-            if (Method.ReturnType != typeof (TResult))
-            {
-                throw new ArgumentException("TResult does not match the return type of the found method");
+                throw new ArgumentException("Declaring type is not T", "methodInfo");
             }
 
             Parameters = parameters;
-        }
+        } 
 
         public bool Equals(ProxyRequest<T, TResult> other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
-
+            
             return Equals(Method, other.Method) && Parameters.SequenceEqual(other.Parameters);
         }
 
@@ -66,7 +56,7 @@ namespace DR.Sleipner.CacheProxy
         {
             var methodInfo = SymbolExtensions.GetMethodInfo(expression);
             var parameters = SymbolExtensions.GetParameter(expression);
-            return new ProxyRequest<T, TResult>(methodInfo.Name, parameters);
+            return new ProxyRequest<T, TResult>(methodInfo, parameters);
         } 
     }
 }

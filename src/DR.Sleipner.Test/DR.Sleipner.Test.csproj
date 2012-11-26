@@ -54,10 +54,10 @@
     <Compile Include="DictionaryCacheTest.cs" />
     <Compile Include="ILGenProxyGenerationTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ProxyContextTest.cs" />
     <Compile Include="SurgeProtectionTest.cs" />
     <Compile Include="SleipnerProxyTest.cs" />
     <Compile Include="TestModel\AwesomeException.cs" />
+    <Compile Include="TestModel\ILessAwesomeInterface.cs" />
     <Compile Include="TestModel\IAwesomeInterface.cs" />
   </ItemGroup>
   <ItemGroup>

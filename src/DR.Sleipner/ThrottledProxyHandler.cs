@@ -39,17 +39,16 @@ namespace DR.Sleipner
             }
         }
 
-        public TResult HandleRequest<TResult>(string methodName, object[] parameters)
+        public TResult HandleRequest<TResult>(ProxyRequest<T, TResult> proxyRequest)
         {
-            var proxyContext = new ProxyRequest<T, TResult>(methodName, parameters);
-            var cachePolicy = _cachePolicyProvider.GetPolicy(proxyContext.Method);
+            var cachePolicy = _cachePolicyProvider.GetPolicy(proxyRequest.Method);
 
             if (cachePolicy == null || cachePolicy.CacheDuration == 0)
             {
-                return GetRealResult(proxyContext);
+                return GetRealResult(proxyRequest);
             }
 
-            var cachedItem = _cacheProvider.GetItem(proxyContext, cachePolicy) ?? new CachedObject<TResult>(CachedObjectState.None, null);
+            var cachedItem = _cacheProvider.GetItem(proxyRequest, cachePolicy) ?? new CachedObject<TResult>(CachedObjectState.None, null);
 
             if (cachedItem.State == CachedObjectState.Fresh)
             {
@@ -61,7 +60,7 @@ namespace DR.Sleipner
                 throw cachedItem.ThrownException;
             }
 
-            var requestKey = new RequestKey(proxyContext.Method, proxyContext.Parameters);
+            var requestKey = new RequestKey(proxyRequest.Method, proxyRequest.Parameters);
             var waitFunction = _syncronizer.GetWaitFunction(requestKey);
 
             if (waitFunction != null)
@@ -70,12 +69,12 @@ namespace DR.Sleipner
                     return cachedItem.Object;
 
                 waitFunction();
-                return HandleRequest<TResult>(methodName, parameters);
+                return HandleRequest(proxyRequest);
             }
 
             if (cachedItem.State == CachedObjectState.Stale)
             {
-                var task = new Task<TResult>(() => GetRealResult(proxyContext));
+                var task = new Task<TResult>(() => GetRealResult(proxyRequest));
                 task.ContinueWith(taskState =>
                 {
                     try
@@ -88,12 +87,12 @@ namespace DR.Sleipner
                                 _preserveInternalException(exception);
                             }
 
-                            _cacheProvider.StoreException<TResult>(proxyContext, cachePolicy, exception);
+                            _cacheProvider.StoreException(proxyRequest, cachePolicy, exception);
                         }
                         else
                         {
                             var itemToStore = taskState.Exception != null ? cachedItem.Object : taskState.Result;
-                            _cacheProvider.StoreItem(proxyContext, cachePolicy, itemToStore);                            
+                            _cacheProvider.StoreItem(proxyRequest, cachePolicy, itemToStore);                            
                         }
                     }
                     finally
@@ -110,19 +109,19 @@ namespace DR.Sleipner
             TResult realInstanceResult;
             try
             {
-                realInstanceResult = GetRealResult(proxyContext);
-                _cacheProvider.StoreItem(proxyContext, cachePolicy, realInstanceResult);
+                realInstanceResult = GetRealResult(proxyRequest);
+                _cacheProvider.StoreItem(proxyRequest, cachePolicy, realInstanceResult);
             }
             catch (TargetInvocationException e)
             {
                 var inner = e.InnerException;
                 _preserveInternalException(inner);
-                _cacheProvider.StoreException(proxyContext, cachePolicy, inner);
+                _cacheProvider.StoreException(proxyRequest, cachePolicy, inner);
                 throw e.InnerException;
             }
             catch (Exception e)
             {
-                _cacheProvider.StoreException(proxyContext, cachePolicy, e);
+                _cacheProvider.StoreException(proxyRequest, cachePolicy, e);
                 throw;
             }
             finally

@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 
 namespace DR.Sleipner.CacheProxy
 {
-    public interface IProxyHandler<TType> where TType : class
+    public interface IProxyHandler<T> where T : class
     {
-        TResult HandleRequest<TResult>(string methodName, object[] parameters);
+        TResult HandleRequest<TResult>(ProxyRequest<T, TResult> proxyRequest);
     }
 }

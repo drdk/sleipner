@@ -54,10 +54,10 @@ namespace DR.Sleipner.Test
         [Test]
         public void TestGenericMethod()
         {
-            var instanceMock = new Mock<IAwesomeInterface>();
-            var cacheProvider = new DictionaryCache<IAwesomeInterface>();
+            var instanceMock = new Mock<ILessAwesomeInterface>();
+            var cacheProvider = new DictionaryCache<ILessAwesomeInterface>();
 
-            var proxy = new SleipnerProxy<IAwesomeInterface>(instanceMock.Object, cacheProvider);
+            var proxy = new SleipnerProxy<ILessAwesomeInterface>(instanceMock.Object, cacheProvider);
             proxy.Configure(a =>
             {
                 a.ForAll().CacheFor(50);
@@ -65,11 +65,10 @@ namespace DR.Sleipner.Test
 
             var methodReturnValue = new[] { "", "" }.ToList();
             instanceMock.Setup(a => a.GenericMethod<string>("", 0)).Returns(methodReturnValue);
-            instanceMock.Setup(a => a.GenericMethod<int>("", 0)).Returns(new[] { 1, 2 });
+            instanceMock.Setup(a => a.GenericMethod<object>("", 0)).Returns(new object[] { 1, 2 });
 
-            proxy.Object.GenericMethod<int>("", 0);
             proxy.Object.GenericMethod<string>("", 0);
-            //proxy.Object.GenericMethod<string>();
+            proxy.Object.GenericMethod<object>("", 0);
 
             instanceMock.Verify(a => a.GenericMethod<string>("", 0), Times.Once());
         }

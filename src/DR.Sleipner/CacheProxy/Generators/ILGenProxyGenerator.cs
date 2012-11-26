@@ -51,19 +51,23 @@ namespace DR.Sleipner.CacheProxy.Generators
 
             cTorBody.Emit(OpCodes.Ret);                         //Return
 
-            var proxyCallMethod = typeof(IProxyHandler<T>).GetMethod("HandleRequest");
-
             foreach (var method in interfaceType.GetMethods()) //We guarantee internally that this is the methods of an interface. The compiler will gurantee that these are all the methods that needs proxying.
             {
                 var parameterTypes = method.GetParameters().Select(a => a.ParameterType).ToArray();
-                var proxyMethod = typeBuilder.DefineMethod(method.Name, MethodAttributes.Public | MethodAttributes.Virtual, CallingConventions.HasThis, method.ReturnType, parameterTypes);
-
+                var proxyMethod = typeBuilder.DefineMethod(
+                    method.Name,
+                    MethodAttributes.Public | MethodAttributes.Virtual,
+                    CallingConventions.Standard | CallingConventions.HasThis,
+                    method.ReturnType,
+                    parameterTypes);
+                
                 if (method.IsGenericMethod)
                 {
                     var genericTypes = method.GetGenericArguments();
-                    proxyMethod.DefineGenericParameters(genericTypes.Select(a => a.Name).ToArray());
+                    var contraints = proxyMethod.DefineGenericParameters(genericTypes.Select(a => a.Name).ToArray());
                 }
 
+                var methodIndex = interfaceType.GetMethods().ToList().IndexOf(method);
                 var methodBody = proxyMethod.GetILGenerator();
                 
                 /* This below code creates a pass through proxy method that does nothing. It just forwards everything to real instance.
@@ -84,11 +88,42 @@ namespace DR.Sleipner.CacheProxy.Generators
                     continue;
                 }
 
+                /* Load the methodinfo of the current method into a local variable */
+
+                var methodInfoLocal = methodBody.DeclareLocal(typeof (MethodInfo));
+                methodBody.Emit(OpCodes.Ldtoken, typeof(T));                                        //typeof(T)
+                methodBody.Emit(OpCodes.Call, typeof(Type).GetMethod("GetTypeFromHandle"));         //typeof(T)
+                methodBody.Emit(OpCodes.Call, typeof(Type).GetMethod("GetMethods", new Type[0]));   //.GetMethods(new Type[0])
+                methodBody.Emit(OpCodes.Ldc_I4, methodIndex);                                       //Read Array Index x
+                methodBody.Emit(OpCodes.Ldelem, typeof(MethodInfo));                                //As an methodinfo
+                if (method.IsGenericMethod)
+                {
+                    var genericTypes = method.GetGenericArguments();
+                    var genericTypesArray = methodBody.DeclareLocal(typeof (Type[]));
+                    methodBody.Emit(OpCodes.Ldc_I4, genericTypes.Length);
+                    methodBody.Emit(OpCodes.Newarr, typeof(Type));
+                    methodBody.Emit(OpCodes.Stloc, genericTypesArray);
+
+                    for (var i = 0; i < genericTypes.Length; i++)
+                    {
+                        var genericType = genericTypes[i];
+                        methodBody.Emit(OpCodes.Ldloc, genericTypesArray);
+                        methodBody.Emit(OpCodes.Ldc_I4, i);
+                        methodBody.Emit(OpCodes.Ldtoken, genericType);
+                        methodBody.Emit(OpCodes.Call, typeof(Type).GetMethod("GetTypeFromHandle"));
+                        methodBody.Emit(OpCodes.Stelem_Ref);
+                    }
+
+                    methodBody.Emit(OpCodes.Ldloc, genericTypesArray);
+                    methodBody.Emit(OpCodes.Call, typeof(MethodInfo).GetMethod("MakeGenericMethod"));
+                }
+                methodBody.Emit(OpCodes.Stloc, methodInfoLocal);                                    //And store it
+                
                 /* The below code creates an array that contains all the values
                  * that were passed into the method we're proxying.
                  */
                 var methodParameterArray = methodBody.DeclareLocal(typeof(object[]));
-
+                
                 methodBody.Emit(OpCodes.Ldc_I4, parameterTypes.Length);     //Push array size on stack
                 methodBody.Emit(OpCodes.Newarr, typeof(object));            //Create array
                 methodBody.Emit(OpCodes.Stloc, methodParameterArray);       //Store array in local variable
@@ -108,21 +143,34 @@ namespace DR.Sleipner.CacheProxy.Generators
                     methodBody.Emit(OpCodes.Stelem_Ref);                    //Store element in array
                 }
 
+                /* This creates a proxy request object */
+                var proxyRequestType = typeof (ProxyRequest<,>).MakeGenericType(typeof (T), method.ReturnType);
+                var proxyRequest = methodBody.DeclareLocal(proxyRequestType);
+                var proxyRequesyCtor = proxyRequestType.GetConstructor(new[] {typeof (MethodInfo), typeof (object[])});
+
+                methodBody.Emit(OpCodes.Ldloc, methodInfoLocal);
+                methodBody.Emit(OpCodes.Ldloc, methodParameterArray);
+                methodBody.Emit(OpCodes.Newobj, proxyRequesyCtor);
+                methodBody.Emit(OpCodes.Stloc, proxyRequest);
+
+                var proxyCallMethod = typeof(IProxyHandler<T>).GetMethod("HandleRequest");
+                proxyCallMethod = proxyCallMethod.MakeGenericMethod(new[] {method.ReturnType});
+
                 /* This generates a method call to the proxyMethod handler field. */
                 var cachedItem = methodBody.DeclareLocal(method.ReturnType);
                 methodBody.Emit(OpCodes.Ldarg_0);
-                methodBody.Emit(OpCodes.Ldfld, handlerField);                                                                   //Load this on the stack
-                methodBody.Emit(OpCodes.Ldstr, method.Name);                                                                    //Load the first parameter value on the stack (name of the method being called)
-                methodBody.Emit(OpCodes.Ldloc, methodParameterArray);                                                           //Load the array on the stack
-                methodBody.Emit(OpCodes.Callvirt, proxyCallMethod.MakeGenericMethod(new []{ method.ReturnType })); //Call the interceptMethod
-                methodBody.Emit(OpCodes.Stloc, cachedItem);                                                                     //Store the result of the method call in a local variable. This also pops it from the stack.
-                methodBody.Emit(OpCodes.Ldloc, cachedItem);                                                                     //Load cached item on the stack
-                methodBody.Emit(OpCodes.Ret);                                                                                   //Return to caller
+                methodBody.Emit(OpCodes.Ldfld, handlerField);                                   //Load this on the stack
+                methodBody.Emit(OpCodes.Ldloc, proxyRequest);
+                methodBody.Emit(OpCodes.Callvirt, proxyCallMethod);                             //Call the interceptMethod
+                methodBody.Emit(OpCodes.Stloc, cachedItem);                                     //Store the result of the method call in a local variable. This also pops it from the stack.
+                methodBody.Emit(OpCodes.Ldloc, cachedItem);                                     //Load cached item on the stack
+                methodBody.Emit(OpCodes.Ret);                                                   //Return to caller
 
                 typeBuilder.DefineMethodOverride(proxyMethod, method);
             }
 
             var createdType = typeBuilder.CreateType();
+            AssemblyBuilder.Save("SleipnerCacheProxies.dll");
             return createdType;
         }
 

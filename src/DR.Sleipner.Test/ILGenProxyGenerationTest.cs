@@ -26,16 +26,19 @@ namespace DR.Sleipner.Test
             var proxy = (IAwesomeInterface) Activator.CreateInstance(proxyType, instanceMock.Object, proxyHandlerMock.Object);
 
             proxy.FaulyCachedMethod();
+            var proxyRequest1 = ProxyRequest<IAwesomeInterface>.FromExpression(a => a.FaulyCachedMethod());
+
             instanceMock.Verify(a => a.FaulyCachedMethod(), Times.Never());
-            proxyHandlerMock.Verify(a => a.HandleRequest<IEnumerable<string>>("FaulyCachedMethod", new object[0]), Times.Once());
+            proxyHandlerMock.Verify(a => a.HandleRequest(proxyRequest1), Times.Once());
 
             proxy.VoidMethod();
             instanceMock.Verify(a => a.VoidMethod(), Times.Once());
-            proxyHandlerMock.Verify(a => a.HandleRequest<IEnumerable<string>>("VoidMethod", new object[0]), Times.Never());
 
             proxy.ParameteredMethod("", 1);
+            var proxyRequest2 = ProxyRequest<IAwesomeInterface>.FromExpression(a => a.ParameteredMethod("", 1));
+
             instanceMock.Verify(a => a.ParameteredMethod("", 1), Times.Never());
-            proxyHandlerMock.Verify(a => a.HandleRequest<IEnumerable<string>>("ParameteredMethod", new object[]{"", 1}));
+            proxyHandlerMock.Verify(a => a.HandleRequest(proxyRequest2));
         }
     }
 }
