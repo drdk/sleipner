@@ -57,8 +57,6 @@
     <Compile Include="SurgeProtectionTest.cs" />
     <Compile Include="SleipnerProxyTest.cs" />
     <Compile Include="TestModel\AwesomeException.cs" />
-    <Compile Include="TestModel\Bla.cs" />
-    <Compile Include="TestModel\ILessAwesomeInterface.cs" />
     <Compile Include="TestModel\IAwesomeInterface.cs" />
   </ItemGroup>
   <ItemGroup>

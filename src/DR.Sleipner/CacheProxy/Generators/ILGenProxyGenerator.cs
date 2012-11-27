@@ -60,7 +60,7 @@ namespace DR.Sleipner.CacheProxy.Generators
                 var proxyMethod = typeBuilder.DefineMethod(
                     method.Name,
                     MethodAttributes.Public | MethodAttributes.Virtual,
-                    CallingConventions.HasThis,
+                    CallingConventions.Standard | CallingConventions.HasThis,
                     method.ReturnType,
                     parameterTypes);
                 
@@ -94,11 +94,11 @@ namespace DR.Sleipner.CacheProxy.Generators
                 /* Load the methodinfo of the current method into a local variable */
 
                 var methodInfoLocal = methodBody.DeclareLocal(typeof (MethodInfo));
-                methodBody.Emit(OpCodes.Ldtoken, typeof(T));                                        //typeof(T)
-                methodBody.Emit(OpCodes.Callvirt, typeof(Type).GetMethod("GetTypeFromHandle"));         //typeof(T)
+                methodBody.Emit(OpCodes.Ldtoken, typeof(T));                                            //typeof(T)
+                methodBody.Emit(OpCodes.Call, typeof(Type).GetMethod("GetTypeFromHandle"));             //typeof(T) NOTICE USE OF CALL INSTEAD OF CALLVIRT
                 methodBody.Emit(OpCodes.Callvirt, typeof(Type).GetMethod("GetMethods", new Type[0]));   //.GetMethods(new Type[0])
-                methodBody.Emit(OpCodes.Ldc_I4, methodIndex);                                       //Read Array Index x
-                methodBody.Emit(OpCodes.Ldelem, typeof(MethodInfo));                                //As an methodinfo
+                methodBody.Emit(OpCodes.Ldc_I4, methodIndex);                                           //Read Array Index x
+                methodBody.Emit(OpCodes.Ldelem, typeof(MethodInfo));                                    //As an methodinfo
                 if (method.IsGenericMethod)
                 {
                     var genericTypes = method.GetGenericArguments();
@@ -113,7 +113,7 @@ namespace DR.Sleipner.CacheProxy.Generators
                         methodBody.Emit(OpCodes.Ldloc, genericTypesArray);
                         methodBody.Emit(OpCodes.Ldc_I4, i);
                         methodBody.Emit(OpCodes.Ldtoken, genericType);
-                        methodBody.Emit(OpCodes.Callvirt, typeof(Type).GetMethod("GetTypeFromHandle"));
+                        methodBody.Emit(OpCodes.Call, typeof(Type).GetMethod("GetTypeFromHandle"));
                         methodBody.Emit(OpCodes.Stelem_Ref);
                     }
 
@@ -173,7 +173,7 @@ namespace DR.Sleipner.CacheProxy.Generators
             }
 
             var createdType = typeBuilder.CreateType();
-            AssemblyBuilder.Save("SleipnerCacheProxies.dll");
+            //AssemblyBuilder.Save("SleipnerCacheProxies.dll");
             return createdType;
         }
 
