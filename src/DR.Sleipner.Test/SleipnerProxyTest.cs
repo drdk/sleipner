@@ -54,7 +54,6 @@ namespace DR.Sleipner.Test
         [Test]
         public void TestGenericMethod()
         {
-            Assert.Inconclusive();
             var instanceMock = new Mock<ILessAwesomeInterface>();
             var cacheProvider = new DictionaryCache<ILessAwesomeInterface>();
 
@@ -65,13 +64,18 @@ namespace DR.Sleipner.Test
             });
 
             var methodReturnValue = new[] { "", "" }.ToList();
-            instanceMock.Setup(a => a.GenericMethod<string>("", 0)).Returns(methodReturnValue);
-            instanceMock.Setup(a => a.GenericMethod<object>("", 0)).Returns(new object[] { 1, 2 });
+            //instanceMock.Setup(a => a.GenericMethod<string>("", 0)).Returns(methodReturnValue);
+            //instanceMock.Setup(a => a.GenericMethod<object>("", 0)).Returns(new object[] { 1, 2 });
 
-            proxy.Object.GenericMethod<string>("", 0);
-            proxy.Object.GenericMethod<object>("", 0);
+            var dicks = typeof (ILessAwesomeInterface).GetMethods()[0];
+            var bla = proxy.Object.GetType().GetMethods()[0];
 
-            instanceMock.Verify(a => a.GenericMethod<string>("", 0), Times.Once());
+            proxy.Object.Rofl();
+
+            //proxy.Object.GenericMethod<string>("", 0);
+            //proxy.Object.GenericMethod<object>("", 0);
+
+            //instanceMock.Verify(a => a.GenericMethod<string>("", 0), Times.Once());
         }
 
         [Test]

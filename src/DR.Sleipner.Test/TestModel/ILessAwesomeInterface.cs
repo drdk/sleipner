@@ -9,5 +9,6 @@ namespace DR.Sleipner.Test.TestModel
     public interface ILessAwesomeInterface
     {
         IList<T> GenericMethod<T>(string str, int number);
+        void Rofl();
     }
 }

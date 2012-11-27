@@ -41,6 +41,9 @@ namespace DR.Sleipner.CacheProxy.Generators
             //Create constructor body
             var cTorBody = cTorBuilder.GetILGenerator();
 
+            cTorBody.Emit(OpCodes.Ldarg_0);
+            cTorBody.Emit(OpCodes.Call, typeof(Object).GetConstructor(Type.EmptyTypes));
+
             cTorBody.Emit(OpCodes.Ldarg_0);                     //Load this on stack
             cTorBody.Emit(OpCodes.Ldarg_1);                     //Load the first parameter (the realInstance parameter) of the constructor on stack
             cTorBody.Emit(OpCodes.Stfld, realInstanceField);    //Store parameter reference in realInstanceField
@@ -57,14 +60,14 @@ namespace DR.Sleipner.CacheProxy.Generators
                 var proxyMethod = typeBuilder.DefineMethod(
                     method.Name,
                     MethodAttributes.Public | MethodAttributes.Virtual,
-                    CallingConventions.Standard | CallingConventions.HasThis,
+                    CallingConventions.HasThis,
                     method.ReturnType,
                     parameterTypes);
                 
                 if (method.IsGenericMethod)
                 {
                     var genericTypes = method.GetGenericArguments();
-                    var contraints = proxyMethod.DefineGenericParameters(genericTypes.Select(a => a.Name).ToArray());
+                    proxyMethod.DefineGenericParameters(genericTypes.Select(a => a.Name).ToArray());
                 }
 
                 var methodIndex = interfaceType.GetMethods().ToList().IndexOf(method);
@@ -92,8 +95,8 @@ namespace DR.Sleipner.CacheProxy.Generators
 
                 var methodInfoLocal = methodBody.DeclareLocal(typeof (MethodInfo));
                 methodBody.Emit(OpCodes.Ldtoken, typeof(T));                                        //typeof(T)
-                methodBody.Emit(OpCodes.Call, typeof(Type).GetMethod("GetTypeFromHandle"));         //typeof(T)
-                methodBody.Emit(OpCodes.Call, typeof(Type).GetMethod("GetMethods", new Type[0]));   //.GetMethods(new Type[0])
+                methodBody.Emit(OpCodes.Callvirt, typeof(Type).GetMethod("GetTypeFromHandle"));         //typeof(T)
+                methodBody.Emit(OpCodes.Callvirt, typeof(Type).GetMethod("GetMethods", new Type[0]));   //.GetMethods(new Type[0])
                 methodBody.Emit(OpCodes.Ldc_I4, methodIndex);                                       //Read Array Index x
                 methodBody.Emit(OpCodes.Ldelem, typeof(MethodInfo));                                //As an methodinfo
                 if (method.IsGenericMethod)
@@ -110,12 +113,12 @@ namespace DR.Sleipner.CacheProxy.Generators
                         methodBody.Emit(OpCodes.Ldloc, genericTypesArray);
                         methodBody.Emit(OpCodes.Ldc_I4, i);
                         methodBody.Emit(OpCodes.Ldtoken, genericType);
-                        methodBody.Emit(OpCodes.Call, typeof(Type).GetMethod("GetTypeFromHandle"));
+                        methodBody.Emit(OpCodes.Callvirt, typeof(Type).GetMethod("GetTypeFromHandle"));
                         methodBody.Emit(OpCodes.Stelem_Ref);
                     }
 
                     methodBody.Emit(OpCodes.Ldloc, genericTypesArray);
-                    methodBody.Emit(OpCodes.Call, typeof(MethodInfo).GetMethod("MakeGenericMethod"));
+                    methodBody.Emit(OpCodes.Callvirt, typeof(MethodInfo).GetMethod("MakeGenericMethod"));
                 }
                 methodBody.Emit(OpCodes.Stloc, methodInfoLocal);                                    //And store it
                 
@@ -165,12 +168,12 @@ namespace DR.Sleipner.CacheProxy.Generators
                 methodBody.Emit(OpCodes.Stloc, cachedItem);                                     //Store the result of the method call in a local variable. This also pops it from the stack.
                 methodBody.Emit(OpCodes.Ldloc, cachedItem);                                     //Load cached item on the stack
                 methodBody.Emit(OpCodes.Ret);                                                   //Return to caller
-
+                
                 typeBuilder.DefineMethodOverride(proxyMethod, method);
             }
 
             var createdType = typeBuilder.CreateType();
-            //AssemblyBuilder.Save("SleipnerCacheProxies.dll");
+            AssemblyBuilder.Save("SleipnerCacheProxies.dll");
             return createdType;
         }
 
