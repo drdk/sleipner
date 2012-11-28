@@ -49,6 +49,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AwesomeEnum.cs" />
     <Compile Include="EnyimMemcachedProviderGetItemTests.cs" />
     <Compile Include="EnyimMemcachedProviderStoreItemTests.cs" />
     <Compile Include="HashAlgorithmTest.cs" />

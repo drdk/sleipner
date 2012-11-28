@@ -31,7 +31,7 @@ namespace DR.Sleipner.CacheProxy.Syncronizer
             if (ReferenceEquals(this, other)) return true;
 
             var one = _methodInfo.Equals(other._methodInfo);
-            var two = _parameters.SequenceEqual(other._parameters);
+            var two = _parameters.SequenceEqual(other._parameters, new CollectionComparer());
 
             var res = one && two;
             return res;

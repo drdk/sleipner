@@ -74,6 +74,32 @@ namespace DR.Sleipner.Test
         }
 
         [Test]
+        public void TestComplexParametersMethod()
+        {
+            var instanceMock = new Mock<IAwesomeInterface>();
+            var cacheProvider = new DictionaryCache<IAwesomeInterface>();
+
+            var proxy = new SleipnerProxy<IAwesomeInterface>(instanceMock.Object, cacheProvider);
+            proxy.Configure(a =>
+            {
+                a.ForAll().CacheFor(50);
+            });
+
+            var methodReturnValue = new[] { "", "" }.ToList();
+            instanceMock.Setup(a => a.ParameteredMethod("a", 0, new [] { "a", "b" })).Returns(methodReturnValue);
+            instanceMock.Setup(a => a.ParameteredMethod("a", 0, new [] { "a", "c" })).Returns(methodReturnValue);
+
+            for (var i = 0; i <= 10; i++)
+            {
+                proxy.Object.ParameteredMethod("a", 0, new[] { "a", "b" });
+                proxy.Object.ParameteredMethod("a", 0, new[] { "a", "c" });
+            }
+
+            instanceMock.Verify(a => a.ParameteredMethod("a", 0, new[] { "a", "b" }), Times.Once());
+            instanceMock.Verify(a => a.ParameteredMethod("a", 0, new[] { "a", "c" }), Times.Once());
+        }
+
+        [Test]
         public void TestNoCache()
         {
             var instanceMock = new Mock<IAwesomeInterface>();
@@ -151,7 +177,7 @@ namespace DR.Sleipner.Test
             IEnumerable<string> result = new[] { "", "" };
             var exception = new AwesomeException();
 
-            cacheProviderMock.Setup(a => a.GetItem<IEnumerable<string>>(proxyContext, cachePolicy)).Returns(new CachedObject<IEnumerable<string>>(CachedObjectState.Stale, result));
+            cacheProviderMock.Setup(a => a.GetItem(proxyContext, cachePolicy)).Returns(new CachedObject<IEnumerable<string>>(CachedObjectState.Stale, result));
             instanceMock.Setup(a => a.ParameterlessMethod()).Throws(exception);
 
             sleipner.Object.ParameterlessMethod();
@@ -159,9 +185,9 @@ namespace DR.Sleipner.Test
             Thread.Sleep(1000);
 
             instanceMock.Verify(a => a.ParameterlessMethod(), Times.Once());
-            cacheProviderMock.Verify(a => a.GetItem<IEnumerable<string>>(proxyContext, cachePolicy), Times.Once());
+            cacheProviderMock.Verify(a => a.GetItem(proxyContext, cachePolicy), Times.Once());
             cacheProviderMock.Verify(a => a.StoreItem(proxyContext, cachePolicy, result), Times.Never());
-            cacheProviderMock.Verify(a => a.StoreException<IEnumerable<string>>(proxyContext, cachePolicy, exception), Times.Once());
+            cacheProviderMock.Verify(a => a.StoreException(proxyContext, cachePolicy, exception), Times.Once());
         }
     }
 }

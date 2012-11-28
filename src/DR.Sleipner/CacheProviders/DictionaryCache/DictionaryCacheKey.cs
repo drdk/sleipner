@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using DR.Sleipner.CacheProxy;
 
 namespace DR.Sleipner.CacheProviders.DictionaryCache
 {
@@ -35,7 +36,7 @@ namespace DR.Sleipner.CacheProviders.DictionaryCache
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
 
-            return Equals(other._primaryKey, _primaryKey) && _cacheKeys.SequenceEqual(other._cacheKeys);
+            return Equals(other._primaryKey, _primaryKey) && _cacheKeys.SequenceEqual(other._cacheKeys, new CollectionComparer());
         }
 
         public override int GetHashCode()

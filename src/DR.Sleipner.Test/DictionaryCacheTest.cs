@@ -8,6 +8,7 @@ using DR.Sleipner.CacheProviders;
 using DR.Sleipner.CacheProviders.DictionaryCache;
 using DR.Sleipner.CacheProxy;
 using DR.Sleipner.Model;
+using DR.Sleipner.Test.TestModel;
 using NUnit.Framework;
 
 namespace DR.Sleipner.Test
@@ -27,6 +28,25 @@ namespace DR.Sleipner.Test
             var cachePolicy = bla.GetPolicy(proxyContext.Method);
 
             var val = Enumerable.Empty<object>();
+
+            cache.StoreItem(proxyContext, cachePolicy, val);
+            var returnedValue = cache.GetItem(proxyContext, cachePolicy);
+
+            Assert.AreEqual(val, returnedValue.Object);
+        }
+
+        [Test]
+        public void TestReturnsCachedItemWithinPeriod_ListType()
+        {
+            var cache = new DictionaryCache<IAwesomeInterface>();
+
+            var bla = new CachePolicyProvider<IAwesomeInterface>();
+            bla.For(a => a.ParameteredMethod(default(string), default(int), default(List<string>))).CacheFor(10);
+
+            var proxyContext = ProxyRequest<IAwesomeInterface>.FromExpression(a => a.ParameteredMethod("a", 2, new List<string>() {"a", "b"}));
+            var cachePolicy = bla.GetPolicy(proxyContext.Method);
+
+            var val = Enumerable.Empty<string>();
 
             cache.StoreItem(proxyContext, cachePolicy, val);
             var returnedValue = cache.GetItem(proxyContext, cachePolicy);

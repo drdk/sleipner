@@ -14,6 +14,8 @@ namespace DR.Sleipner.Test.TestModel
         IEnumerable<string> NonCachedMethod();
         IEnumerable<string> ParameterlessMethod();
         IEnumerable<string> ParameteredMethod(string a, int b);
+        IEnumerable<string> ParameteredMethod(string a, int b, IList<string> list);
+        IEnumerable<string> EnumMethod(AwesomeEnum level, string a);
         IList<T> GenericMethod<T>(string str, int number);
         object LolMethod();
         int RoflMethod();

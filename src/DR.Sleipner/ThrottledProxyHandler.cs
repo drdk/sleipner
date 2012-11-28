@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
@@ -131,7 +132,7 @@ namespace DR.Sleipner
 
             return realInstanceResult;
         }
-
+        
         private TResult GetRealResult<TResult>(ProxyRequest<T, TResult> proxyRequest)
         {
             var delegateMethod = DelegateFactory.Create(proxyRequest.Method);

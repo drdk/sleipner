@@ -30,7 +30,7 @@ namespace DR.Sleipner.CacheProxy
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
             
-            return Equals(Method, other.Method) && Parameters.SequenceEqual(other.Parameters);
+            return Equals(Method, other.Method) && Parameters.SequenceEqual(other.Parameters, new CollectionComparer());
         }
 
         public override int GetHashCode()

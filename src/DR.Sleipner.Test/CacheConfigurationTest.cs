@@ -49,7 +49,7 @@ namespace DR.Sleipner.Test
                                    });
 
             var parameterLessMethodInfo = typeof (IAwesomeInterface).GetMethod("ParameterlessMethod");
-            var parameteredMethodInfo = typeof(IAwesomeInterface).GetMethod("ParameteredMethod");
+            var parameteredMethodInfo = typeof(IAwesomeInterface).GetMethod("ParameteredMethod", new Type[] {typeof(string), typeof(int)});
             var lolMethodInfo = typeof (IAwesomeInterface).GetMethod("LolMethod");
 
             var parameterLessPolicy = sleipner.CachePolicyProvider.GetPolicy(parameterLessMethodInfo);

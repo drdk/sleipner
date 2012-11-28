@@ -51,11 +51,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CacheConfigurationTest.cs" />
+    <Compile Include="CollectionComparerTest.cs" />
     <Compile Include="DictionaryCacheTest.cs" />
     <Compile Include="ILGenProxyGenerationTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SurgeProtectionTest.cs" />
     <Compile Include="SleipnerProxyTest.cs" />
+    <Compile Include="TestModel\AwesomeEnum.cs" />
     <Compile Include="TestModel\AwesomeException.cs" />
     <Compile Include="TestModel\IAwesomeInterface.cs" />
   </ItemGroup>

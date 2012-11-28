@@ -16,19 +16,26 @@ namespace DR.Sleipner.EnyimMemcachedProvider.Test
         {
             var hashes = new List<string>()
                              {
-                                 GetHash(a => a.ParameteredMethod("1", 0)),
-                                 GetHash(a => a.ParameteredMethod("4", 0)),
-                                 GetHash(a => a.ParameteredMethod("2", 0)),
-                                 GetHash(a => a.ParameteredMethod("3", 0)),
+                                 GetHash(a => a.EnumMethod(AwesomeEnum.Insane, "2")),
+                                 GetHash(a => a.EnumMethod(AwesomeEnum.Insane, "3")),
+                                 GetHash(a => a.EnumMethod(AwesomeEnum.Mega, "1")),
+                                 GetHash(a => a.EnumMethod(AwesomeEnum.Mega, "2")),
+                                 GetHash(a => a.ParameteredMethod("a", 0, new List<object>(){"s", new List<int>() {1,2,3}, "b"})),
+                                 GetHash(a => a.ParameteredMethod("a", 0, new List<int>(){1,2,3})),
+                                 GetHash(a => a.ParameteredMethod("a", 0, new List<int>(){2,2,3})),
+                                 GetHash(a => a.ParameteredMethod("a", 0, new List<string>(){"", null, "b"})),
+                                 GetHash(a => a.ParameteredMethod("a", 0, new List<object>(){"", null, "b"})),
+                                 GetHash(a => a.ParameteredMethod("a", 0)),
+                                 GetHash(a => a.ParameteredMethod("d", 0)),
+                                 GetHash(a => a.ParameteredMethod("b", 0)),
+                                 GetHash(a => a.ParameteredMethod("c", 0)),
                                  GetHash(a => a.ParameteredMethod(null, 1)),
                                  GetHash(a => a.ParameteredMethod(null, 0)),
                                  GetHash(a => a.ParameteredMethod(null, -1)),
                                  GetHash(a => a.ParameteredMethod("", 1)),
                                  GetHash(a => a.ParameteredMethod("", -1)),
-                                 GetHash(a => a.ParameteredMethod("a", 0)),
                                  GetHash(a => a.ParameteredMethod("a", 1)),
                                  GetHash(a => a.ParameteredMethod("a", -1)),
-                                 GetHash(a => a.ParameteredMethod("b", 0)),
                                  GetHash(a => a.ParameteredMethod(null, 11)),
                                  GetHash(a => a.ParameterlessMethod())
                              };

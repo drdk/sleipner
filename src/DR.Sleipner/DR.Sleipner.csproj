@@ -50,6 +50,7 @@
     <Compile Include="CacheProviders\DictionaryCache\DictionaryCacheKey.cs" />
     <Compile Include="CacheProviders\DictionaryCache\DictionaryCache.cs" />
     <Compile Include="CacheProviders\ICacheProvider.cs" />
+    <Compile Include="CacheProxy\CollectionComparer.cs" />
     <Compile Include="CacheProxy\IProxyHandler.cs" />
     <Compile Include="CacheProxy\ProxyRequest.cs" />
     <Compile Include="Helpers\SymbolExtensions.cs" />

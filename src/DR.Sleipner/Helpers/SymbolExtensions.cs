@@ -67,30 +67,17 @@ namespace DR.Sleipner.Helpers
                 throw new ArgumentException("Invalid Expression. Expression should consist of a Method call only.");
             }
 
-            var args = outermostExpression.Arguments.Select(a => FindValue(a)).ToArray();
+            var args = outermostExpression.Arguments.Select(a => GetExpressionValue(a)).ToArray();
 
             return args;
         }
 
-        private static object FindValue(Expression expr)
-        {
-            if (expr is ConstantExpression)
-            {
-                var constant = expr as ConstantExpression;
-                return constant.Value;
-            }
-            else if (expr is MemberExpression)
-            {
-                return GetValue(expr as MemberExpression);
-            }
-
-            throw new ArgumentException("Expression type could not be determined", "expr");
-        }
-
-        private static object GetValue(MemberExpression member)
+        private static object GetExpressionValue(Expression member)
         {
             var objectMember = Expression.Convert(member, typeof(object));
+
             var getterLambda = Expression.Lambda<Func<object>>(objectMember);
+
             var getter = getterLambda.Compile();
 
             return getter();
