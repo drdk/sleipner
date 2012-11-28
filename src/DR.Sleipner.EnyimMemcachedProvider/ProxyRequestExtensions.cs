@@ -12,18 +12,12 @@ namespace DR.Sleipner.EnyimMemcachedProvider
     {
         public static string CreateHash<T, TResult>(this ProxyRequest<T, TResult> proxyRequest) where T : class
         {
-            var parameterValues = proxyRequest.Parameters
-                                              .Select(EscapeStrings)
-                                              .Select(EscapeNulls)
-                                              .Select(ExpandCollections);
-                
-
             var sb = new StringBuilder();
             sb.Append(typeof (T).FullName);
-            sb.Append("-");
+            sb.Append(" - ");
             sb.Append(proxyRequest.Method);
-            sb.Append("-");
-            sb.Append(CreateStringRepresentation(parameterValues));
+            sb.Append(" - ");
+            sb.AddParameterRepresentations(proxyRequest.Parameters);
 
             var bytes = Encoding.UTF8.GetBytes(sb.ToString());
             var hashAlgorithm = new SHA256Managed();
@@ -32,43 +26,36 @@ namespace DR.Sleipner.EnyimMemcachedProvider
             return Convert.ToBase64String(hash);
         }
 
-        private static string CreateStringRepresentation(IEnumerable<object> parameters)
+        public static void AddParameterRepresentations(this StringBuilder builder, object value)
         {
-            var sb = new StringBuilder();
-            sb.Append(string.Join(", ", parameters));
-
-            return sb.ToString();
-        }
-
-        private static object EscapeStrings(object value)
-        {
-            if (value is string)
+            if (value == null)
             {
-                return "\"" + value + "\"";
+                builder.Append(".null");
             }
-
-            return value;
-        } 
-
-        private static object EscapeNulls(object value)
-        {
-            return value ?? "n-u-l-l";
-        }
-
-        private static object ExpandCollections(object value)
-        {
-            if (value is string) //strings are collections - we don't want to do this to them
-                return value;
-
-            var enumerable = value as IEnumerable;
-            if (enumerable != null)
+            else if (value is string)
             {
-                var coll = enumerable.Cast<object>();
-                var result = coll.Select(EscapeStrings).Select(EscapeNulls).Select(ExpandCollections).ToArray();
-                return "[" + CreateStringRepresentation(result) + "]";
+                builder.Append("\"" + value + "\"");
             }
-
-            return value;
-        } 
+            else if (value is IEnumerable)
+            {
+                var ienum = (IEnumerable)value;
+                var collection = ienum.Cast<object>().ToArray();
+                builder.Append("[");
+                for(var i = 0; i < collection.Length; i++)
+                {
+                    builder.AddParameterRepresentations(collection[i]);
+                    if (i < collection.Length-1)
+                    {
+                        builder.Append(",");
+                    }
+                    
+                }
+                builder.Append("]");
+            }
+            else
+            {
+                builder.Append(value);
+            }
+        }
     }
 }
