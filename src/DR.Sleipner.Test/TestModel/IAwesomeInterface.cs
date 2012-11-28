@@ -17,6 +17,7 @@ namespace DR.Sleipner.Test.TestModel
         IEnumerable<string> ParameteredMethod(string a, int b, IList<string> list);
         IEnumerable<string> EnumMethod(AwesomeEnum level, string a);
         IList<T> GenericMethod<T>(string str, int number);
+        IDictionary<TKey, TValue> StrangeGenericMethod<TValue, TKey>(TKey keys, IEnumerable<TValue> values); 
         object LolMethod();
         int RoflMethod();
     }

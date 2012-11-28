@@ -74,6 +74,64 @@ namespace DR.Sleipner.Test
         }
 
         [Test]
+        public void TestStrangeGenericMethod()
+        {
+            var instanceMock = new Mock<IAwesomeInterface>();
+            var cacheProvider = new DictionaryCache<IAwesomeInterface>();
+
+            var proxy = new SleipnerProxy<IAwesomeInterface>(instanceMock.Object, cacheProvider);
+            proxy.Configure(a =>
+            {
+                a.ForAll().CacheFor(50);
+            });
+
+            var dictReturn = new Dictionary<string, int>()
+                                 {
+                                     {"a", 1},
+                                     {"b", 2},
+                                     {"c", 3},
+                                 };
+            instanceMock.Setup(a => a.StrangeGenericMethod("a", new[] {1, 2, 3})).Returns(dictReturn);
+
+            for(var i = 0; i < 10; i++)
+            {
+                var result = proxy.Object.StrangeGenericMethod("a", new[] { 1, 2, 3 });
+                Assert.AreSame(result, dictReturn);
+            }
+
+            instanceMock.Verify(a => a.StrangeGenericMethod("a", new[] { 1, 2, 3 }), Times.Once());
+        }
+
+        [Test]
+        public void TestStrangeGenericMethod_NoCache()
+        {
+            var instanceMock = new Mock<IAwesomeInterface>();
+            var cacheProvider = new DictionaryCache<IAwesomeInterface>();
+
+            var proxy = new SleipnerProxy<IAwesomeInterface>(instanceMock.Object, cacheProvider);
+            proxy.Configure(a =>
+            {
+                a.ForAll().NoCache();
+            });
+
+            var dictReturn = new Dictionary<string, int>()
+                                 {
+                                     {"a", 1},
+                                     {"b", 2},
+                                     {"c", 3},
+                                 };
+            instanceMock.Setup(a => a.StrangeGenericMethod("a", new[] { 1, 2, 3 })).Returns(dictReturn);
+
+            for (var i = 0; i < 10; i++)
+            {
+                var result = proxy.Object.StrangeGenericMethod("a", new[] { 1, 2, 3 });
+                Assert.AreSame(result, dictReturn);
+            }
+
+            instanceMock.Verify(a => a.StrangeGenericMethod("a", new[] { 1, 2, 3 }), Times.Exactly(10));
+        }
+
+        [Test]
         public void TestComplexParametersMethod()
         {
             var instanceMock = new Mock<IAwesomeInterface>();
