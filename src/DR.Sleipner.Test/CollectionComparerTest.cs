@@ -35,5 +35,14 @@ namespace DR.Sleipner.Test
 
             Assert.IsFalse(cc.SequenceEqual(bb, new CollectionComparer()), "CC == BB");
         }
+
+        [Test]
+        public void TestCollectionComparionNullSanity()
+        {
+            var comparer = new CollectionComparer();
+            Assert.IsTrue(comparer.Equals(null, null), "Comparer dit not evaluate null and null as equal");
+            Assert.IsFalse(comparer.Equals(null, new object()), "Comparer thinks null == new object()");
+            Assert.IsFalse(comparer.Equals(new object(), null), "Comparer thinks new object() == null");
+        }
     }
 }
