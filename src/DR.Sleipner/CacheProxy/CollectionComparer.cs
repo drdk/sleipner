@@ -10,6 +10,15 @@ namespace DR.Sleipner.CacheProxy
     {
         public new bool Equals(object x, object y)
         {
+            if (x == null && y != null)
+                return false;
+            
+            if (y == null && x != null)
+                return false;
+
+            if (x == null && y == null)
+                return true;
+
             if (x.Equals(y))
                 return true;
 
