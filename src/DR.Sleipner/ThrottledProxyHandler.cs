@@ -62,15 +62,14 @@ namespace DR.Sleipner
             }
 
             var requestKey = new RequestKey(proxyRequest.Method, proxyRequest.Parameters);
-            var waitFunction = _syncronizer.GetWaitFunction(requestKey);
+            var waitFunction = _syncronizer.GetWaitFunction<TResult>(requestKey);
 
             if (waitFunction != null)
             {
                 if (cachedItem.State == CachedObjectState.Stale)
                     return cachedItem.Object;
 
-                waitFunction();
-                return HandleRequest(proxyRequest);
+                return waitFunction();
             }
 
             if (cachedItem.State == CachedObjectState.Stale)
@@ -98,7 +97,7 @@ namespace DR.Sleipner
                     }
                     finally
                     {
-                        _syncronizer.Release(requestKey);
+                        _syncronizer.Release(requestKey, default(TResult));
                     }
 
                 }, TaskContinuationOptions.ExecuteSynchronously);
@@ -107,7 +106,7 @@ namespace DR.Sleipner
             }
 
             //At this point nothing is in the cache.
-            TResult realInstanceResult;
+            TResult realInstanceResult = default(TResult);
             try
             {
                 realInstanceResult = GetRealResult(proxyRequest);
@@ -127,7 +126,7 @@ namespace DR.Sleipner
             }
             finally
             {
-                _syncronizer.Release(requestKey);
+                _syncronizer.Release(requestKey, realInstanceResult);
             }
 
             return realInstanceResult;
