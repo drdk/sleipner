@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using DR.Sleipner.CacheConfiguration;
 using DR.Sleipner.CacheProviders;
 using DR.Sleipner.CacheProviders.DictionaryCache;
 using DR.Sleipner.CacheProxy;
 using DR.Sleipner.Model;
+using DR.Sleipner.Test.TestCacheProvider;
 using DR.Sleipner.Test.TestModel;
 using Moq;
 using NUnit.Framework;
@@ -246,6 +249,32 @@ namespace DR.Sleipner.Test
             cacheProviderMock.Verify(a => a.GetItem(proxyContext, cachePolicy), Times.Once());
             cacheProviderMock.Verify(a => a.StoreItem(proxyContext, cachePolicy, result), Times.Never());
             cacheProviderMock.Verify(a => a.StoreException(proxyContext, cachePolicy, exception), Times.Once());
+        }
+
+        [Test]
+        public void TestThrottleProxyHandler()
+        {
+            Assert.Inconclusive();
+
+            var instanceMock = new Mock<IAwesomeInterface>();
+            instanceMock.Setup(x => x.ParameteredMethod(It.IsAny<string>(), It.IsAny<int>())).Returns((string s, int i) => new [] { s });
+            var policyProvider = new CachePolicyProvider<IAwesomeInterface>();
+            policyProvider.ForAll().CacheFor(60);
+            var cacheProvider = new NullCacheProvider<IAwesomeInterface>();
+
+            var handler = new ThrottledProxyHandler<IAwesomeInterface>(instanceMock.Object, policyProvider, cacheProvider);
+
+            var proxyContext = ProxyRequest<IAwesomeInterface>.FromExpression(a => a.ParameteredMethod("", 1));
+
+            var tasks = new List<Task<IEnumerable<string>>>();
+            foreach (var i in Enumerable.Range(0, 10000))
+            {
+                tasks.Add(Task<IEnumerable<string>>.Factory.StartNew(() => handler.HandleRequest(proxyContext)));
+            }
+
+// ReSharper disable CoVariantArrayConversion
+            Assert.DoesNotThrow(() => Task.WaitAll(tasks.ToArray()));
+// ReSharper restore CoVariantArrayConversion
         }
     }
 }
