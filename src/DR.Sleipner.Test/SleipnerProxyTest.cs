@@ -10,7 +10,6 @@ using DR.Sleipner.CacheProviders;
 using DR.Sleipner.CacheProviders.DictionaryCache;
 using DR.Sleipner.CacheProxy;
 using DR.Sleipner.Model;
-using DR.Sleipner.Test.TestCacheProvider;
 using DR.Sleipner.Test.TestModel;
 using Moq;
 using NUnit.Framework;
