@@ -254,8 +254,6 @@ namespace DR.Sleipner.Test
         [Test]
         public void TestThrottleProxyHandler()
         {
-            Assert.Inconclusive();
-
             var instanceMock = new Mock<IAwesomeInterface>();
             instanceMock.Setup(x => x.ParameteredMethod(It.IsAny<string>(), It.IsAny<int>())).Returns((string s, int i) => new [] { s });
             var policyProvider = new CachePolicyProvider<IAwesomeInterface>();
