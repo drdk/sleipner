@@ -62,14 +62,14 @@ namespace DR.Sleipner
             }
 
             var requestKey = new RequestKey(proxyRequest.Method, proxyRequest.Parameters);
-            var waitFunction = _syncronizer.GetWaitFunction<TResult>(requestKey);
+            RequestWaitHandle<TResult> waitHandle;
 
-            if (waitFunction != null)
+            if (_syncronizer.ShouldWaitForHandle(requestKey, out waitHandle))
             {
                 if (cachedItem.State == CachedObjectState.Stale)
                     return cachedItem.Object;
 
-                return waitFunction();
+                return waitHandle.WaitForResult();
             }
 
             if (cachedItem.State == CachedObjectState.Stale)
@@ -77,8 +77,11 @@ namespace DR.Sleipner
                 var task = new Task<TResult>(() => GetRealResult(proxyRequest));
                 task.ContinueWith(taskState =>
                 {
+                    Exception asyncRequestThrownException = null;
+                    var asyncResult = default(TResult);
                     try
                     {
+                        
                         if (taskState.Exception != null && cachePolicy.BubbleExceptions)
                         {
                             var exception = taskState.Exception.InnerException;
@@ -88,16 +91,24 @@ namespace DR.Sleipner
                             }
 
                             _cacheProvider.StoreException(proxyRequest, cachePolicy, exception);
+                            asyncRequestThrownException = exception;
                         }
                         else
                         {
-                            var itemToStore = taskState.Exception != null ? cachedItem.Object : taskState.Result;
-                            _cacheProvider.StoreItem(proxyRequest, cachePolicy, itemToStore);                            
+                            asyncResult = taskState.Exception != null ? cachedItem.Object : taskState.Result;
+                            _cacheProvider.StoreItem(proxyRequest, cachePolicy, asyncResult);
                         }
                     }
                     finally
                     {
-                        _syncronizer.Release(requestKey, default(TResult));
+                        if (asyncRequestThrownException != null)
+                        {
+                            _syncronizer.ReleaseWithException<TResult>(requestKey, asyncRequestThrownException);
+                        }
+                        else
+                        {
+                            _syncronizer.Release(requestKey, asyncResult);
+                        }
                     }
 
                 }, TaskContinuationOptions.ExecuteSynchronously);
@@ -106,7 +117,8 @@ namespace DR.Sleipner
             }
 
             //At this point nothing is in the cache.
-            TResult realInstanceResult = default(TResult);
+            var realInstanceResult = default(TResult);
+            Exception thrownException = null;
             try
             {
                 realInstanceResult = GetRealResult(proxyRequest);
@@ -114,19 +126,29 @@ namespace DR.Sleipner
             }
             catch (TargetInvocationException e)
             {
-                var inner = e.InnerException;
-                _preserveInternalException(inner);
-                _cacheProvider.StoreException(proxyRequest, cachePolicy, inner);
-                throw e.InnerException;
+                thrownException = e.InnerException;
+                _preserveInternalException(thrownException);
+                _cacheProvider.StoreException(proxyRequest, cachePolicy, thrownException);
+
+                throw thrownException;
             }
             catch (Exception e)
             {
-                _cacheProvider.StoreException(proxyRequest, cachePolicy, e);
+                thrownException = e;
+                _cacheProvider.StoreException(proxyRequest, cachePolicy, thrownException);
+
                 throw;
             }
             finally
             {
-                _syncronizer.Release(requestKey, realInstanceResult);
+                if (thrownException != null)
+                {
+                    _syncronizer.ReleaseWithException<TResult>(requestKey, thrownException);
+                }
+                else
+                {
+                    _syncronizer.Release(requestKey, realInstanceResult);
+                }
             }
 
             return realInstanceResult;

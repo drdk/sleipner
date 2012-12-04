@@ -7,7 +7,8 @@ namespace DR.Sleipner.CacheProxy.Syncronizer
 {
     public interface IRequestSyncronizer
     {
-        Func<TResult> GetWaitFunction<TResult>(RequestKey key);
+        bool ShouldWaitForHandle<TResult>(RequestKey key, out RequestWaitHandle<TResult> waitHandle);
         void Release<TResult>(RequestKey key, TResult result);
+        void ReleaseWithException<TResult>(RequestKey key, Exception thrownException);
     }
 }
