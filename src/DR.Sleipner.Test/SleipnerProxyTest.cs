@@ -253,10 +253,9 @@ namespace DR.Sleipner.Test
         [Test]
         public void TestThrottleProxyHandler()
         {
-            Assert.Inconclusive();
-
             var instanceMock = new Mock<IAwesomeInterface>();
-            instanceMock.Setup(x => x.ParameteredMethod(It.IsAny<string>(), It.IsAny<int>())).Returns((string s, int i) => new [] { s });
+            var returnObject = new []{"", "1"};
+            instanceMock.Setup(x => x.ParameteredMethod(It.IsAny<string>(), It.IsAny<int>())).Returns((string a, int bb) => returnObject);
             var policyProvider = new CachePolicyProvider<IAwesomeInterface>();
             policyProvider.ForAll().CacheFor(60);
             var cacheProvider = new Mock<ICacheProvider<IAwesomeInterface>>(MockBehavior.Loose); 
@@ -270,10 +269,9 @@ namespace DR.Sleipner.Test
             {
                 tasks.Add(Task<IEnumerable<string>>.Factory.StartNew(() => handler.HandleRequest(proxyContext)));
             }
-
-// ReSharper disable CoVariantArrayConversion
+            
             Assert.DoesNotThrow(() => Task.WaitAll(tasks.ToArray()));
-// ReSharper restore CoVariantArrayConversion
+            Assert.IsTrue(tasks.All(a => a.Result == returnObject));
         }
     }
 }

@@ -53,6 +53,7 @@
     <Compile Include="CacheProxy\CollectionComparer.cs" />
     <Compile Include="CacheProxy\IProxyHandler.cs" />
     <Compile Include="CacheProxy\ProxyRequest.cs" />
+    <Compile Include="CacheProxy\Syncronizer\RequestWaitHandle.cs" />
     <Compile Include="Helpers\SymbolExtensions.cs" />
     <Compile Include="CacheProxyGenerator.cs" />
     <Compile Include="CacheProxy\Syncronizer\RequestKey.cs" />
