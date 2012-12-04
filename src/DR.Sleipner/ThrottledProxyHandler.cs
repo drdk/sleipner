@@ -22,6 +22,8 @@ namespace DR.Sleipner
         private readonly Action<Exception> _preserveInternalException;
         private readonly IRequestSyncronizer _syncronizer = new RequestSyncronizer();
 
+        private readonly IDictionary<MethodInfo, DelegateFactory.LateBoundMethod> _lateBoundMethodCache = new Dictionary<MethodInfo, DelegateFactory.LateBoundMethod>(); 
+
         public ThrottledProxyHandler(T realInstance, ICachePolicyProvider<T> cachePolicyProvider, ICacheProvider<T> cacheProvider)
         {
             _realInstance = realInstance;
@@ -156,8 +158,21 @@ namespace DR.Sleipner
         
         private TResult GetRealResult<TResult>(ProxyRequest<T, TResult> proxyRequest)
         {
-            var delegateMethod = DelegateFactory.Create(proxyRequest.Method);
+            var delegateMethod = GetLateBoundMethod(proxyRequest.Method);
+
             return (TResult)delegateMethod(_realInstance, proxyRequest.Parameters);
         }
+
+        private DelegateFactory.LateBoundMethod GetLateBoundMethod(MethodInfo methodInfo)
+        {
+            DelegateFactory.LateBoundMethod lateBoundMethod;
+            if (!_lateBoundMethodCache.TryGetValue(methodInfo, out lateBoundMethod))
+            {
+                lateBoundMethod = DelegateFactory.Create(methodInfo);
+                _lateBoundMethodCache[methodInfo] = lateBoundMethod;
+            }
+
+            return lateBoundMethod;
+        } 
     }
 }

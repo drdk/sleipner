@@ -44,6 +44,7 @@
     <Compile Include="CacheConfiguration\CachePolicyProvider.cs" />
     <Compile Include="CacheConfiguration\ICachePolicyProvider.cs" />
     <Compile Include="CacheConfiguration\IMethodConfigurationExpression.cs" />
+    <Compile Include="CacheConfiguration\Param.cs" />
     <Compile Include="CacheConfiguration\MethodCachePolicy.cs" />
     <Compile Include="CacheConfiguration\MethodCachePolicyExpression.cs" />
     <Compile Include="CacheProviders\DictionaryCache\DictionaryCachedItem.cs" />
