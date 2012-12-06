@@ -19,7 +19,6 @@ namespace DR.Sleipner
         private readonly ICachePolicyProvider<T> _cachePolicyProvider;
         private readonly ICacheProvider<T> _cacheProvider;
 
-        private readonly Action<Exception> _preserveInternalException;
         private readonly IRequestSyncronizer _syncronizer = new RequestSyncronizer();
 
         private readonly IDictionary<MethodInfo, DelegateFactory.LateBoundMethod> _lateBoundMethodCache = new Dictionary<MethodInfo, DelegateFactory.LateBoundMethod>(); 
@@ -29,17 +28,6 @@ namespace DR.Sleipner
             _realInstance = realInstance;
             _cachePolicyProvider = cachePolicyProvider;
             _cacheProvider = cacheProvider;
-
-            var preserveStackTrace = typeof(Exception).GetMethod("InternalPreserveStackTrace", BindingFlags.Instance | BindingFlags.NonPublic);
-            if (preserveStackTrace != null)
-            {
-                _preserveInternalException = (Action<Exception>) Delegate.CreateDelegate(typeof (Action<Exception>), preserveStackTrace);
-            }
-            else
-            {
-                //This is to handle mono not having the InternalPreserveStackTrace method
-                _preserveInternalException = e => { };
-            }
         }
 
         public TResult HandleRequest<TResult>(ProxyRequest<T, TResult> proxyRequest)
@@ -87,11 +75,7 @@ namespace DR.Sleipner
                         if (taskState.Exception != null && cachePolicy.BubbleExceptions)
                         {
                             var exception = taskState.Exception.InnerException;
-                            if (exception is TargetInvocationException)
-                            {
-                                _preserveInternalException(exception);
-                            }
-
+                            
                             _cacheProvider.StoreException(proxyRequest, cachePolicy, exception);
                             asyncRequestThrownException = exception;
                         }
@@ -125,14 +109,6 @@ namespace DR.Sleipner
             {
                 realInstanceResult = GetRealResult(proxyRequest);
                 _cacheProvider.StoreItem(proxyRequest, cachePolicy, realInstanceResult);
-            }
-            catch (TargetInvocationException e)
-            {
-                thrownException = e.InnerException;
-                _preserveInternalException(thrownException);
-                _cacheProvider.StoreException(proxyRequest, cachePolicy, thrownException);
-
-                throw thrownException;
             }
             catch (Exception e)
             {
