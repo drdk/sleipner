@@ -15,16 +15,16 @@ namespace DR.Sleipner.Test
     public class CacheConfigurationTest
     {
         [Test]
-        public void TestForAllConfigurationExtensions()
+        public void TestDefault()
         {
             var instanceMock = new Mock<IAwesomeInterface>();
             var cacheProviderMock = new Mock<ICacheProvider<IAwesomeInterface>>();
 
             var sleipner = new SleipnerProxy<IAwesomeInterface>(instanceMock.Object, cacheProviderMock.Object);
             sleipner.Config(a =>
-                                   {
-                                       a.DefaultIs().CacheFor(10).BubbleExceptionsWhenStale();
-                                   });
+                                {
+                                    a.DefaultIs().CacheFor(10).BubbleExceptionsWhenStale();
+                                });
 
             var methods = typeof (IAwesomeInterface).GetMethods();
             foreach (var method in methods)
@@ -33,6 +33,22 @@ namespace DR.Sleipner.Test
                 Assert.IsNotNull(cachePolicy, "Sleipner did not create a cache policy for method: " + method.Name);
                 Assert.IsTrue(cachePolicy.CacheDuration == 10, "Sleiper did not create default policy with 10s duration for method: " + method.Name);
                 Assert.IsTrue(cachePolicy.BubbleExceptions, "Sleiper did not create default policy with bubble exceptions for method: " + method.Name);
+            }
+        }
+
+        [Test]
+        public void TestUnconfigured()
+        {
+            var instanceMock = new Mock<IAwesomeInterface>();
+            var cacheProviderMock = new Mock<ICacheProvider<IAwesomeInterface>>();
+
+            var sleipner = new SleipnerProxy<IAwesomeInterface>(instanceMock.Object, cacheProviderMock.Object);
+
+            var methods = typeof(IAwesomeInterface).GetMethods();
+            foreach (var method in methods)
+            {
+                var cachePolicy = sleipner.CachePolicyProvider.GetPolicy(method, method.GetParameters().Select(a => new object()));
+                Assert.IsNull(cachePolicy, "Sleipner returned a policy for: " + method.Name);
             }
         }
 
