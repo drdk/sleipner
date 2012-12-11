@@ -4,9 +4,9 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
-using DR.Sleipner.CacheConfiguration;
 using DR.Sleipner.CacheProviders;
 using DR.Sleipner.CacheProxy;
+using DR.Sleipner.Config;
 using DR.Sleipner.EnyimMemcachedProvider.Model;
 using DR.Sleipner.Model;
 using Enyim.Caching;
@@ -23,7 +23,7 @@ namespace DR.Sleipner.EnyimMemcachedProvider
             _client = client;
         }
 
-        public CachedObject<TResult> GetItem<TResult>(ProxyRequest<T, TResult> proxyRequest, MethodCachePolicy cachePolicy)
+        public CachedObject<TResult> GetItem<TResult>(ProxyRequest<T, TResult> proxyRequest, CachePolicy cachePolicy)
         {
             var key = proxyRequest.CreateHash();
 
@@ -53,7 +53,7 @@ namespace DR.Sleipner.EnyimMemcachedProvider
             return new CachedObject<TResult>(CachedObjectState.None, null);
         }
 
-        public void StoreItem<TResult>(ProxyRequest<T, TResult> proxyRequest, MethodCachePolicy cachePolicy, TResult item)
+        public void StoreItem<TResult>(ProxyRequest<T, TResult> proxyRequest, CachePolicy cachePolicy, TResult item)
         {
             var key = proxyRequest.CreateHash();
             var cachedObject = new MemcachedObject<TResult>()
@@ -65,7 +65,7 @@ namespace DR.Sleipner.EnyimMemcachedProvider
             _client.Store(StoreMode.Set, key, cachedObject);
         }
 
-        public void StoreException<TResult>(ProxyRequest<T, TResult> proxyRequest, MethodCachePolicy cachePolicy, Exception exception)
+        public void StoreException<TResult>(ProxyRequest<T, TResult> proxyRequest, CachePolicy cachePolicy, Exception exception)
         {
             var key = proxyRequest.CreateHash();
             var cachedObject = new MemcachedObject<TResult>()

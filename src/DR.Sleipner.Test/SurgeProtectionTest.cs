@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using DR.Sleipner.CacheConfiguration;
 using DR.Sleipner.CacheProviders.DictionaryCache;
+using DR.Sleipner.Config;
+using DR.Sleipner.Config.Expressions;
 using DR.Sleipner.Test.TestModel;
 using Moq;
 using NUnit.Framework;
@@ -38,7 +39,7 @@ namespace DR.Sleipner.Test
         {
             var cacheProvider = new DictionaryCache<IAwesomeInterface>();
             var sleipnerProxy = new SleipnerProxy<IAwesomeInterface>(Mock.Object, cacheProvider);
-            sleipnerProxy.Configure(a => { a.ForAll().CacheFor(10); });
+            sleipnerProxy.Config(a => { a.DefaultIs().CacheFor(10); });
 
             var target = sleipnerProxy.Object;
 

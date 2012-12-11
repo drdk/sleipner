@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using DR.Sleipner.CacheConfiguration;
 using DR.Sleipner.CacheProviders;
 using DR.Sleipner.CacheProxy;
+using DR.Sleipner.Config;
 using DR.Sleipner.EnyimMemcachedProvider.Model;
 using DR.Sleipner.Model;
 using Enyim.Caching;
@@ -22,7 +22,7 @@ namespace DR.Sleipner.EnyimMemcachedProvider.Test
             var memcachedMock = new Mock<IMemcachedClient>();
             var enyimProvider = new EnyimMemcachedProvider<IAwesomeInterface>(memcachedMock.Object);
 
-            var cachePolicy = new MethodCachePolicy()
+            var cachePolicy = new CachePolicy()
                                   {
                                       CacheDuration = 10
                                   };
@@ -46,7 +46,7 @@ namespace DR.Sleipner.EnyimMemcachedProvider.Test
             var memcachedMock = new Mock<IMemcachedClient>();
             var enyimProvider = new EnyimMemcachedProvider<IAwesomeInterface>(memcachedMock.Object);
 
-            var cachePolicy = new MethodCachePolicy()
+            var cachePolicy = new CachePolicy()
             {
                 CacheDuration = 10
             };
@@ -76,7 +76,7 @@ namespace DR.Sleipner.EnyimMemcachedProvider.Test
             var memcachedMock = new Mock<IMemcachedClient>();
             var enyimProvider = new EnyimMemcachedProvider<IAwesomeInterface>(memcachedMock.Object);
 
-            var cachePolicy = new MethodCachePolicy()
+            var cachePolicy = new CachePolicy()
             {
                 CacheDuration = 10
             };
@@ -106,7 +106,7 @@ namespace DR.Sleipner.EnyimMemcachedProvider.Test
             var memcachedMock = new Mock<IMemcachedClient>();
             var enyimProvider = new EnyimMemcachedProvider<IAwesomeInterface>(memcachedMock.Object);
 
-            var cachePolicy = new MethodCachePolicy()
+            var cachePolicy = new CachePolicy()
             {
                 CacheDuration = 10
             };
@@ -136,7 +136,7 @@ namespace DR.Sleipner.EnyimMemcachedProvider.Test
             var memcachedMock = new Mock<IMemcachedClient>();
             var enyimProvider = new EnyimMemcachedProvider<IAwesomeInterface>(memcachedMock.Object);
 
-            var cachePolicy = new MethodCachePolicy()
+            var cachePolicy = new CachePolicy()
             {
                 CacheDuration = 2
             };
@@ -166,7 +166,7 @@ namespace DR.Sleipner.EnyimMemcachedProvider.Test
             var memcachedMock = new Mock<IMemcachedClient>();
             var enyimProvider = new EnyimMemcachedProvider<IAwesomeInterface>(memcachedMock.Object);
 
-            var cachePolicy = new MethodCachePolicy()
+            var cachePolicy = new CachePolicy()
             {
                 CacheDuration = 10
             };

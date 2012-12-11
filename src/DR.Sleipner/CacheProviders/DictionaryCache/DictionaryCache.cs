@@ -4,8 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using DR.Sleipner.CacheConfiguration;
 using DR.Sleipner.CacheProxy;
+using DR.Sleipner.Config;
 using DR.Sleipner.Model;
 
 namespace DR.Sleipner.CacheProviders.DictionaryCache
@@ -14,7 +14,7 @@ namespace DR.Sleipner.CacheProviders.DictionaryCache
     {
         private readonly IDictionary<DictionaryCacheKey, DictionaryCachedItem> _cache = new ConcurrentDictionary<DictionaryCacheKey, DictionaryCachedItem>();
 
-        public CachedObject<TResult> GetItem<TResult>(ProxyRequest<T, TResult> proxyRequest, MethodCachePolicy cachePolicy)
+        public CachedObject<TResult> GetItem<TResult>(ProxyRequest<T, TResult> proxyRequest, CachePolicy cachePolicy)
         {
             var cacheKey = new DictionaryCacheKey(proxyRequest.Method, proxyRequest.Parameters);
             if(_cache.ContainsKey(cacheKey))
@@ -32,13 +32,13 @@ namespace DR.Sleipner.CacheProviders.DictionaryCache
             return new CachedObject<TResult>(CachedObjectState.None, null);
         }
 
-        public void StoreItem<TResult>(ProxyRequest<T, TResult> proxyRequest, MethodCachePolicy cachePolicy, TResult item)
+        public void StoreItem<TResult>(ProxyRequest<T, TResult> proxyRequest, CachePolicy cachePolicy, TResult item)
         {
             var cacheKey = new DictionaryCacheKey(proxyRequest.Method, proxyRequest.Parameters);
             _cache[cacheKey] = new DictionaryCachedItem(item, TimeSpan.FromSeconds(cachePolicy.CacheDuration));
         }
 
-        public void StoreException<TResult>(ProxyRequest<T, TResult> proxyRequest, MethodCachePolicy cachePolicy, Exception exception)
+        public void StoreException<TResult>(ProxyRequest<T, TResult> proxyRequest, CachePolicy cachePolicy, Exception exception)
         {
             var cacheKey = new DictionaryCacheKey(proxyRequest.Method, proxyRequest.Parameters);
 

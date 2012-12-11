@@ -40,13 +40,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CacheConfiguration\CachePolicyExtensions.cs" />
-    <Compile Include="CacheConfiguration\CachePolicyProvider.cs" />
-    <Compile Include="CacheConfiguration\ICachePolicyProvider.cs" />
-    <Compile Include="CacheConfiguration\IMethodConfigurationExpression.cs" />
-    <Compile Include="CacheConfiguration\Param.cs" />
-    <Compile Include="CacheConfiguration\MethodCachePolicy.cs" />
-    <Compile Include="CacheConfiguration\MethodCachePolicyExpression.cs" />
+    <Compile Include="Config\BasicCachePolicyProvider.cs" />
+    <Compile Include="Config\CachePolicyExtensions.cs" />
+    <Compile Include="Config\ICachePolicyProvider.cs" />
+    <Compile Include="Config\Parsers\AnyValueParser.cs" />
+    <Compile Include="Config\Expressions\ExpressionConfiguredMethod.cs" />
+    <Compile Include="Config\IConfiguredMethod.cs" />
+    <Compile Include="Config\Param.cs" />
+    <Compile Include="Config\CachePolicy.cs" />
     <Compile Include="CacheProviders\DictionaryCache\DictionaryCachedItem.cs" />
     <Compile Include="CacheProviders\DictionaryCache\DictionaryCacheKey.cs" />
     <Compile Include="CacheProviders\DictionaryCache\DictionaryCache.cs" />
@@ -55,6 +56,10 @@
     <Compile Include="CacheProxy\IProxyHandler.cs" />
     <Compile Include="CacheProxy\ProxyRequest.cs" />
     <Compile Include="CacheProxy\Syncronizer\RequestWaitHandle.cs" />
+    <Compile Include="Config\Parsers\BetweenParser.cs" />
+    <Compile Include="Config\Parsers\ConstantParser.cs" />
+    <Compile Include="Config\Parsers\IParameterParser.cs" />
+    <Compile Include="Config\Expressions\ExpressionConfigExtensions.cs" />
     <Compile Include="Helpers\SymbolExtensions.cs" />
     <Compile Include="CacheProxyGenerator.cs" />
     <Compile Include="CacheProxy\Syncronizer\RequestKey.cs" />

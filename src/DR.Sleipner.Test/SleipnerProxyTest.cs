@@ -5,10 +5,11 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using DR.Sleipner.CacheConfiguration;
 using DR.Sleipner.CacheProviders;
 using DR.Sleipner.CacheProviders.DictionaryCache;
 using DR.Sleipner.CacheProxy;
+using DR.Sleipner.Config;
+using DR.Sleipner.Config.Expressions;
 using DR.Sleipner.Model;
 using DR.Sleipner.Test.TestModel;
 using Moq;
@@ -38,10 +39,10 @@ namespace DR.Sleipner.Test
             var cacheProvider = new DictionaryCache<IAwesomeInterface>();
 
             var proxy = new SleipnerProxy<IAwesomeInterface>(instanceMock.Object, cacheProvider);
-            proxy.Configure(a =>
-                                       {
-                                           a.ForAll().CacheFor(50);
-                                       });
+            proxy.Config(a =>
+                             {
+                                 a.DefaultIs().CacheFor(50);
+                             });
 
             var methodReturnValue = new[] {"", ""};
             instanceMock.Setup(a => a.ParameteredMethod("", 0)).Returns(methodReturnValue);
@@ -60,9 +61,9 @@ namespace DR.Sleipner.Test
             var cacheProvider = new DictionaryCache<IAwesomeInterface>();
 
             var proxy = new SleipnerProxy<IAwesomeInterface>(instanceMock.Object, cacheProvider);
-            proxy.Configure(a =>
+            proxy.Config(a =>
             {
-                a.ForAll().CacheFor(50);
+                a.DefaultIs().CacheFor(50);
             });
 
             var methodReturnValue = new[] { "", "" }.ToList();
@@ -82,9 +83,9 @@ namespace DR.Sleipner.Test
             var cacheProvider = new DictionaryCache<IAwesomeInterface>();
 
             var proxy = new SleipnerProxy<IAwesomeInterface>(instanceMock.Object, cacheProvider);
-            proxy.Configure(a =>
+            proxy.Config(a =>
             {
-                a.ForAll().CacheFor(50);
+                a.DefaultIs().CacheFor(50);
             });
 
             var dictReturn = new Dictionary<string, int>()
@@ -111,9 +112,9 @@ namespace DR.Sleipner.Test
             var cacheProvider = new DictionaryCache<IAwesomeInterface>();
 
             var proxy = new SleipnerProxy<IAwesomeInterface>(instanceMock.Object, cacheProvider);
-            proxy.Configure(a =>
+            proxy.Config(a =>
             {
-                a.ForAll().NoCache();
+                a.DefaultIs().DisableCache();
             });
 
             var dictReturn = new Dictionary<string, int>()
@@ -140,9 +141,9 @@ namespace DR.Sleipner.Test
             var cacheProvider = new DictionaryCache<IAwesomeInterface>();
 
             var proxy = new SleipnerProxy<IAwesomeInterface>(instanceMock.Object, cacheProvider);
-            proxy.Configure(a =>
+            proxy.Config(a =>
             {
-                a.ForAll().CacheFor(50);
+                a.DefaultIs().CacheFor(50);
             });
 
             var methodReturnValue = new[] { "", "" }.ToList();
@@ -166,10 +167,10 @@ namespace DR.Sleipner.Test
             var cacheProvider = new DictionaryCache<IAwesomeInterface>();
 
             var proxy = new SleipnerProxy<IAwesomeInterface>(instanceMock.Object, cacheProvider);
-            proxy.Configure(a =>
+            proxy.Config(a =>
             {
-                a.ForAll().CacheFor(50);
-                a.For(b => b.ParameteredMethod(Param.IsAny<string>(), Param.IsAny<int>())).NoCache();
+                a.DefaultIs().CacheFor(50);
+                a.For(b => b.ParameteredMethod(Param.IsAny<string>(), Param.IsAny<int>())).DisableCache();
             });
 
             var methodReturnValue = new[] { "", "" };
@@ -195,13 +196,13 @@ namespace DR.Sleipner.Test
             var cacheProviderMock = new Mock<ICacheProvider<IAwesomeInterface>>();
 
             var sleipner = new SleipnerProxy<IAwesomeInterface>(instanceMock.Object, cacheProviderMock.Object);
-            sleipner.Configure(a =>
+            sleipner.Config(a =>
                                    {
                                        a.For(b => b.ParameterlessMethod()).CacheFor(10);
                                    });
 
             var proxyContext = ProxyRequest<IAwesomeInterface>.FromExpression(a => a.ParameterlessMethod());
-            var cachePolicy = sleipner.CachePolicyProvider.GetPolicy(proxyContext.Method);
+            var cachePolicy = sleipner.CachePolicyProvider.GetPolicy(proxyContext.Method, proxyContext.Parameters);
 
             IEnumerable<string> result = new[] { "", "" };
             var exception = new Exception();
@@ -226,13 +227,13 @@ namespace DR.Sleipner.Test
             var instanceMock = new Mock<IAwesomeInterface>();
             var cacheProviderMock = new Mock<ICacheProvider<IAwesomeInterface>>();
             var sleipner = new SleipnerProxy<IAwesomeInterface>(instanceMock.Object, cacheProviderMock.Object);
-            sleipner.Configure(a =>
+            sleipner.Config(a =>
             {
-                a.ForAll().CacheFor(10);
+                a.DefaultIs().CacheFor(10);
             });
 
             var proxyContext = ProxyRequest<IAwesomeInterface>.FromExpression(a => a.ParameterlessMethod());
-            var cachePolicy = sleipner.CachePolicyProvider.GetPolicy(proxyContext.Method);
+            var cachePolicy = sleipner.CachePolicyProvider.GetPolicy(proxyContext.Method, proxyContext.Parameters);
             var result = default(IEnumerable<string>);
             var exception = new AwesomeException();
 
@@ -255,13 +256,13 @@ namespace DR.Sleipner.Test
             var instanceMock = new Mock<IAwesomeInterface>();
             var cacheProviderMock = new Mock<ICacheProvider<IAwesomeInterface>>();
             var sleipner = new SleipnerProxy<IAwesomeInterface>(instanceMock.Object, cacheProviderMock.Object);
-            sleipner.Configure(a =>
+            sleipner.Config(a =>
             {
-                a.For(b => b.ParameterlessMethod()).CacheFor(10).BubbleExceptionsWhenStale(true);
+                a.For(b => b.ParameterlessMethod()).CacheFor(10).BubbleExceptionsWhenStale();
             });
 
             var proxyContext = ProxyRequest<IAwesomeInterface>.FromExpression(a => a.ParameterlessMethod());
-            var cachePolicy = sleipner.CachePolicyProvider.GetPolicy(proxyContext.Method);
+            var cachePolicy = sleipner.CachePolicyProvider.GetPolicy(proxyContext.Method, proxyContext.Parameters);
 
             var parameters = new object[0];
             IEnumerable<string> result = new[] { "", "" };
@@ -286,8 +287,8 @@ namespace DR.Sleipner.Test
             var instanceMock = new Mock<IAwesomeInterface>();
             var returnObject = new []{"", "1"};
             instanceMock.Setup(x => x.ParameteredMethod(It.IsAny<string>(), It.IsAny<int>())).Returns((string a, int bb) => returnObject);
-            var policyProvider = new CachePolicyProvider<IAwesomeInterface>();
-            policyProvider.ForAll().CacheFor(60);
+            var policyProvider = new BasicConfigurationProvider<IAwesomeInterface>();
+            policyProvider.DefaultIs().CacheFor(60);
             var cacheProvider = new Mock<ICacheProvider<IAwesomeInterface>>(MockBehavior.Loose); 
 
             var handler = new ThrottledProxyHandler<IAwesomeInterface>(instanceMock.Object, policyProvider, cacheProvider.Object);

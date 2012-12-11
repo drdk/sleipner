@@ -6,10 +6,10 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using DR.Sleipner.CacheConfiguration;
 using DR.Sleipner.CacheProviders;
 using DR.Sleipner.CacheProxy;
 using DR.Sleipner.CacheProxy.Syncronizer;
+using DR.Sleipner.Config;
 using DR.Sleipner.Model;
 
 namespace DR.Sleipner
@@ -22,6 +22,8 @@ namespace DR.Sleipner
         private readonly IProxyHandler<T> _proxyHandler;
         public readonly ICachePolicyProvider<T> CachePolicyProvider;
 
+        internal IList<IConfiguredMethod<T>> ConfiguredMethods = new List<IConfiguredMethod<T>>(); 
+
         public SleipnerProxy(T realInstance, ICacheProvider<T> cacheProvider)
         {
             if (!typeof (T).IsInterface)
@@ -32,13 +34,13 @@ namespace DR.Sleipner
             var proxyType = CacheProxyGenerator.GetProxyType<T>();
 
             _realInstance = realInstance;
-            CachePolicyProvider = new CachePolicyProvider<T>();
+            CachePolicyProvider = new BasicConfigurationProvider<T>();
             _proxyHandler = new ThrottledProxyHandler<T>(_realInstance, CachePolicyProvider, cacheProvider);
             
             Object = (T)Activator.CreateInstance(proxyType, _realInstance, _proxyHandler);
         }
 
-        public void Configure(Action<ICachePolicyProvider<T>> expression)
+        public void Config(Action<ICachePolicyProvider<T>> expression)
         {
             expression(CachePolicyProvider);
         }

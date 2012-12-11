@@ -5,10 +5,10 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using DR.Sleipner.CacheConfiguration;
 using DR.Sleipner.CacheProviders;
 using DR.Sleipner.CacheProxy;
 using DR.Sleipner.CacheProxy.Syncronizer;
+using DR.Sleipner.Config;
 using DR.Sleipner.Model;
 
 namespace DR.Sleipner
@@ -32,7 +32,7 @@ namespace DR.Sleipner
 
         public TResult HandleRequest<TResult>(ProxyRequest<T, TResult> proxyRequest)
         {
-            var cachePolicy = _cachePolicyProvider.GetPolicy(proxyRequest.Method);
+            var cachePolicy = _cachePolicyProvider.GetPolicy(proxyRequest.Method, proxyRequest.Parameters);
 
             if (cachePolicy == null || cachePolicy.CacheDuration == 0)
             {

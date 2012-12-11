@@ -72,12 +72,10 @@ namespace DR.Sleipner.Helpers
             return args;
         }
 
-        private static object GetExpressionValue(Expression member)
+        public static object GetExpressionValue(Expression member)
         {
             var objectMember = Expression.Convert(member, typeof(object));
-
             var getterLambda = Expression.Lambda<Func<object>>(objectMember);
-
             var getter = getterLambda.Compile();
 
             return getter();
