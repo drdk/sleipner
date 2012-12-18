@@ -45,28 +45,35 @@ namespace DR.Sleipner.EnyimMemcachedProvider.Transcoders
 
             var data = new byte[item.Data.Count];
             Array.Copy(item.Data.Array, item.Data.Offset, data, 0, data.Length);
-
-            using (var memoryStream = new MemoryStream(data))
+            try
             {
-                using (var zipStream = new GZipStream(memoryStream, CompressionMode.Decompress))
+                using (var memoryStream = new MemoryStream(data))
                 {
-                    using (var streamReader = new StreamReader(zipStream))
+                    using (var zipStream = new GZipStream(memoryStream, CompressionMode.Decompress))
                     {
-                        var textReader = new JsonTextReader(streamReader);
-                        try
+                        using (var streamReader = new StreamReader(zipStream))
                         {
-                            return jsonSerializer.Deserialize(textReader);
-                        }
-                        catch (JsonReaderException e)
-                        {
-                            return null;
-                        }
-                        catch (JsonSerializationException e)
-                        {
-                            return null;
+                            var textReader = new JsonTextReader(streamReader);
+                            try
+                            {
+                                return jsonSerializer.Deserialize(textReader);
+                            }
+                            catch (JsonReaderException e)
+                            {
+                                return null;
+                            }
+                            catch (JsonSerializationException e)
+                            {
+                                return null;
+                            }
                         }
                     }
                 }
+            }
+            catch(InvalidDataException e)
+            {
+                //If zipstream was invalid
+                return null;
             }
         }
     }
