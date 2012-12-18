@@ -53,6 +53,8 @@
     <Compile Include="ProxyRequestExtensions.cs" />
     <Compile Include="Transcoders\NewtonsoftProvider.cs" />
     <Compile Include="Transcoders\NewtonsoftTranscoder.cs" />
+    <Compile Include="Transcoders\ZippedNewtonsoftProvider.cs" />
+    <Compile Include="Transcoders\ZippedNewtonsoftTranscoder.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DR.Sleipner\DR.Sleipner.csproj">

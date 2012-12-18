@@ -37,7 +37,10 @@ namespace DR.Sleipner.EnyimMemcachedProvider.Transcoders
                 TypeNameHandling = TypeNameHandling.All
             };
 
-            using (var memoryStream = new MemoryStream(item.Data.Array))
+            var data = new byte[item.Data.Count];
+            Array.Copy(item.Data.Array, item.Data.Offset, data, 0, data.Length);
+
+            using (var memoryStream = new MemoryStream(data))
             {
                 using (var streamReader = new StreamReader(memoryStream))
                 {
