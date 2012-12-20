@@ -4,7 +4,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 using DR.Sleipner.CacheProviders;
 using DR.Sleipner.CacheProxy;
 using DR.Sleipner.CacheProxy.Syncronizer;
@@ -64,24 +63,28 @@ namespace DR.Sleipner
 
             if (cachedItem.State == CachedObjectState.Stale)
             {
-                var task = new Task<TResult>(() => GetRealResult(proxyRequest));
-                task.ContinueWith(taskState =>
+                Func<TResult> loader = () => GetRealResult(proxyRequest);
+
+                loader.BeginInvoke(callback =>
                 {
                     Exception asyncRequestThrownException = null;
                     var asyncResult = default(TResult);
+
                     try
                     {
-                        
-                        if (taskState.Exception != null && cachePolicy.BubbleExceptions)
+                        asyncResult = loader.EndInvoke(callback);
+                        _cacheProvider.StoreItem(proxyRequest, cachePolicy, asyncResult);
+                    }
+                    catch (Exception e)
+                    {
+                        if (cachePolicy.BubbleExceptions)
                         {
-                            var exception = taskState.Exception.InnerException;
-                            
-                            _cacheProvider.StoreException(proxyRequest, cachePolicy, exception);
-                            asyncRequestThrownException = exception;
+                            _cacheProvider.StoreException(proxyRequest, cachePolicy, e);
+                            asyncRequestThrownException = e;
                         }
                         else
                         {
-                            asyncResult = taskState.Exception != null ? cachedItem.Object : taskState.Result;
+                            asyncResult = cachedItem.Object;
                             _cacheProvider.StoreItem(proxyRequest, cachePolicy, asyncResult);
                         }
                     }
@@ -97,8 +100,8 @@ namespace DR.Sleipner
                         }
                     }
 
-                }, TaskContinuationOptions.ExecuteSynchronously);
-                task.Start();
+                }, null);
+
                 return cachedItem.Object;
             }
 
