@@ -34,9 +34,9 @@ var myAwesomeProxy = new SleipnerProxy<IAwesomeService>(
     new EnyimMemcachedProvider<IAwesomeService>(_memcachedClientInstance)
 );
 
-myAwesomeProxy.Configure(a => {
+myAwesomeProxy.Config(a => {
     a.ForAll().CacheFor(120); //By default everything is cached in memcached for 2 minutes
-    a.For(b => b.AwesomeMethod("", 0).CacheFor(10); //Any result from the AwesomeMethod is only cached for 10 seconds though
+    a.For(b => b.AwesomeMethod(Param.IsAny<string>(), Param.IsAny<int>()).CacheFor(10); //Any result from the AwesomeMethod is only cached for 10 seconds though
 });
 
 var myAwesomeService = myAwesomeProxy.Object; //the myAwesomeService object is now backed in memcached.
