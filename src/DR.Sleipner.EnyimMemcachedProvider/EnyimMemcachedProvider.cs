@@ -113,7 +113,7 @@ namespace DR.Sleipner.EnyimMemcachedProvider
         /// </summary>
         public void Exterminatus()
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException("Exterminatus cannot be performed on a memcached based provider (it would exterminate the entire memcached cluster)");
         }
     }
 }
