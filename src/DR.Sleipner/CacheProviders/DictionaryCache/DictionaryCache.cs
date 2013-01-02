@@ -6,6 +6,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using DR.Sleipner.CacheProxy;
 using DR.Sleipner.Config;
+using DR.Sleipner.Helpers;
 using DR.Sleipner.Model;
 
 namespace DR.Sleipner.CacheProviders.DictionaryCache
@@ -55,9 +56,14 @@ namespace DR.Sleipner.CacheProviders.DictionaryCache
             _cache[cacheKey] = new DictionaryCachedItem(exception, duration, absoluteDuration);
         }
 
-        public void Purge(Expression<Action<T>> action)
+        public void Purge<TResult>(Expression<Func<T, TResult>> expression)
         {
-            throw new NotImplementedException();
+            var methodInfo = SymbolExtensions.GetMethodInfo(expression);
+            var parameters = SymbolExtensions.GetParameter(expression);
+            var proxyExpression = new ProxyRequest<T, TResult>(methodInfo, parameters);
+
+            var cacheKey = new DictionaryCacheKey(proxyExpression.Method, proxyExpression.Parameters);
+            _cache.Remove(cacheKey);
         }
 
         public CachedObjectState GetItemState(Expression<Action<T>> action)

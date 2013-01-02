@@ -16,7 +16,7 @@ namespace DR.Sleipner.CacheProviders
         void StoreItem<TResult>(ProxyRequest<T, TResult> proxyRequest, CachePolicy cachePolicy, TResult item);
         void StoreException<TResult>(ProxyRequest<T, TResult> proxyRequest, CachePolicy cachePolicy, Exception exception);
 
-        void Purge(Expression<Action<T>> action);
+        void Purge<TResult>(Expression<Func<T, TResult>> expression);
         CachedObjectState GetItemState(Expression<Action<T>> action);
         void Exterminatus();
     }

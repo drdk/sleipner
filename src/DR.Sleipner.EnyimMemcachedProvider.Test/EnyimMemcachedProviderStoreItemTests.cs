@@ -58,6 +58,20 @@ namespace DR.Sleipner.EnyimMemcachedProvider.Test
         }
 
         [Test]
+        public void TestPurgeItem()
+        {
+            var memcachedMock = new Mock<IMemcachedClient>();
+            var enyimProvider = new EnyimMemcachedProvider<IAwesomeInterface>(memcachedMock.Object);
+            
+            var proxyContext = ProxyRequest<IAwesomeInterface>.FromExpression(a => a.ParameteredMethod("", 1));
+            var hashKey = proxyContext.CreateHash();
+            
+            enyimProvider.Purge(a => a.ParameteredMethod("", 1));
+
+            memcachedMock.Verify(a => a.Remove(hashKey), Times.Once());
+        }
+
+        [Test]
         public void TestStoreException()
         {
             var memcachedMock = new Mock<IMemcachedClient>();

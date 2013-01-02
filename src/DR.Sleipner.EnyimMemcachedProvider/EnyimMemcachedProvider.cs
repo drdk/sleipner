@@ -8,6 +8,7 @@ using DR.Sleipner.CacheProviders;
 using DR.Sleipner.CacheProxy;
 using DR.Sleipner.Config;
 using DR.Sleipner.EnyimMemcachedProvider.Model;
+using DR.Sleipner.Helpers;
 using DR.Sleipner.Model;
 using Enyim.Caching;
 using Enyim.Caching.Memcached;
@@ -92,9 +93,14 @@ namespace DR.Sleipner.EnyimMemcachedProvider
             }
         }
 
-        public void Purge(Expression<Action<T>> action)
+        public void Purge<TResult>(Expression<Func<T, TResult>> expression)
         {
-            throw new NotImplementedException();
+            var methodInfo = SymbolExtensions.GetMethodInfo(expression);
+            var parameters = SymbolExtensions.GetParameter(expression);
+            var proxyExpression = new ProxyRequest<T, TResult>(methodInfo, parameters);
+
+            var hash = proxyExpression.CreateHash();
+            _client.Remove(hash);
         }
 
         public CachedObjectState GetItemState(Expression<Action<T>> action)
