@@ -11,24 +11,29 @@ namespace DR.Sleipner.CacheProviders.DictionaryCache
         public readonly Exception ThrownException;
         public readonly DateTime Created;
         public readonly TimeSpan Duration;
+        public readonly TimeSpan AbsoluteDuration;
 
         public bool IsExpired
         {
             get { return Created + Duration < DateTime.Now; }
         }
 
-        public DictionaryCachedItem(object obj, TimeSpan duration)
+        public DictionaryCachedItem(object obj, TimeSpan duration, TimeSpan absoluteDuration)
         {
             Object = obj;
             Created = DateTime.Now;
+
             Duration = duration;
+            AbsoluteDuration = absoluteDuration;
         }
 
-        public DictionaryCachedItem(Exception exception, TimeSpan duration)
+        public DictionaryCachedItem(Exception exception, TimeSpan duration, TimeSpan absoluteDuration)
         {
             ThrownException = exception;
             Created = DateTime.Now;
+
             Duration = duration;
+            AbsoluteDuration = absoluteDuration;
         }
     }
 }

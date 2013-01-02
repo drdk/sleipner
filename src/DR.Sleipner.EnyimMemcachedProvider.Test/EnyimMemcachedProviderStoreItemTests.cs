@@ -37,6 +37,27 @@ namespace DR.Sleipner.EnyimMemcachedProvider.Test
         }
 
         [Test]
+        public void TestStoreItem_AbsoluteExpire()
+        {
+            var memcachedMock = new Mock<IMemcachedClient>();
+            var enyimProvider = new EnyimMemcachedProvider<IAwesomeInterface>(memcachedMock.Object);
+
+            var cachePolicy = new CachePolicy()
+            {
+                CacheDuration = 10,
+                MaxAge = 20
+            };
+
+            var proxyContext = ProxyRequest<IAwesomeInterface>.FromExpression(a => a.ParameteredMethod("", 1));
+            var hashKey = proxyContext.CreateHash();
+
+            var objectToStore = new[] { "", "" }.AsEnumerable();
+            enyimProvider.StoreItem(proxyContext, cachePolicy, objectToStore);
+
+            memcachedMock.Verify(a => a.Store(StoreMode.Set, hashKey, It.IsAny<MemcachedObject<IEnumerable<string>>>(), TimeSpan.FromSeconds(20)), Times.Once());
+        }
+
+        [Test]
         public void TestStoreException()
         {
             var memcachedMock = new Mock<IMemcachedClient>();

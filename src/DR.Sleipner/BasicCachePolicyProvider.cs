@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Reflection;
 
-namespace DR.Sleipner.Config
+namespace DR.Sleipner
 {
     public class BasicConfigurationProvider<T> : ICachePolicyProvider<T> where T : class
     {

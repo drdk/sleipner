@@ -62,7 +62,14 @@ namespace DR.Sleipner.EnyimMemcachedProvider
                                        Object = item
                                    };
 
-            _client.Store(StoreMode.Set, key, cachedObject);
+            if(cachePolicy.MaxAge > 0)
+            {
+                _client.Store(StoreMode.Set, key, cachedObject, TimeSpan.FromSeconds(cachePolicy.MaxAge));
+            }
+            else
+            {
+                _client.Store(StoreMode.Set, key, cachedObject);
+            }
         }
 
         public void StoreException<TResult>(ProxyRequest<T, TResult> proxyRequest, CachePolicy cachePolicy, Exception exception)
@@ -75,7 +82,14 @@ namespace DR.Sleipner.EnyimMemcachedProvider
                 Exception = exception,
             };
 
-            _client.Store(StoreMode.Set, key, cachedObject);
+            if (cachePolicy.MaxAge > 0)
+            {
+                _client.Store(StoreMode.Set, key, cachedObject, TimeSpan.FromSeconds(cachePolicy.MaxAge));
+            }
+            else
+            {
+                _client.Store(StoreMode.Set, key, cachedObject);
+            }
         }
 
         public void Purge(Expression<Action<T>> action)

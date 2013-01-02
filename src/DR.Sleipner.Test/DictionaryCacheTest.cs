@@ -65,7 +65,7 @@ namespace DR.Sleipner.Test
             ICacheProvider<IDummyInterface> cache = new DictionaryCache<IDummyInterface>();
 
             var configProvider = new BasicConfigurationProvider<IDummyInterface>();
-            configProvider.For(a => a.GetProgramCards(Param.IsAny<string>(), Param.IsAny<DateTime>())).CacheFor(2);
+            configProvider.For(a => a.GetProgramCards(Param.IsAny<string>(), Param.IsAny<DateTime>())).CacheFor(2).ExpireAfter(3);
 
             var proxyContext = ProxyRequest<IDummyInterface>.FromExpression(a => a.GetProgramCards("", DateTime.Now));
             var val = Enumerable.Empty<object>();
@@ -79,6 +79,28 @@ namespace DR.Sleipner.Test
             var returnedValue = cache.GetItem(proxyContext, cachePolicy);
 
             Assert.IsTrue(returnedValue.State == CachedObjectState.Stale);
+        }
+
+        [Test]
+        public void TestReturnsStaleOutsidePeriod_AbsoluteExpiery()
+        {
+            ICacheProvider<IDummyInterface> cache = new DictionaryCache<IDummyInterface>();
+
+            var configProvider = new BasicConfigurationProvider<IDummyInterface>();
+            configProvider.For(a => a.GetProgramCards(Param.IsAny<string>(), Param.IsAny<DateTime>())).CacheFor(2).ExpireAfter(3);
+
+            var proxyContext = ProxyRequest<IDummyInterface>.FromExpression(a => a.GetProgramCards("", DateTime.Now));
+            var val = Enumerable.Empty<object>();
+
+            var cachePolicy = configProvider.GetPolicy(proxyContext.Method, proxyContext.Parameters);
+            Assert.IsNotNull(cachePolicy, "Config provider didn't return a cache policy");
+            Assert.IsTrue(cachePolicy.CacheDuration == 2, "Cache provider returned an unexpected cache policy");
+
+            cache.StoreItem(proxyContext, cachePolicy, val);
+            Thread.Sleep(3000 + 100);
+            var returnedValue = cache.GetItem(proxyContext, cachePolicy);
+
+            Assert.AreEqual(CachedObjectState.None, returnedValue.State);
         }
     }
 

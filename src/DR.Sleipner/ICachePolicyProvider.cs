@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
 
-namespace DR.Sleipner.Config
+namespace DR.Sleipner
 {
     public interface ICachePolicyProvider<T> where T : class
     {

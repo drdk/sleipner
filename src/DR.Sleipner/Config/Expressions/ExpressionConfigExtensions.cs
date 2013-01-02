@@ -5,19 +5,19 @@ namespace DR.Sleipner.Config.Expressions
 {
     public static class ExpressionConfigExtensions
     {
-        public static CachePolicy For<T>(this ICachePolicyProvider<T> provider, Expression<Action<T>> expression) where T : class
+        public static IMethodFamilyConfigurationExpression For<T>(this ICachePolicyProvider<T> provider, Expression<Action<T>> expression) where T : class
         {
             var configuredMethod = new ExpressionConfiguredMethod<T>(expression);
             var policy = provider.RegisterMethodConfiguration(configuredMethod);
 
-            return policy;
+            return new MethodFamilyConfigExpression(policy);
         }
 
-        public static CachePolicy DefaultIs<T>(this ICachePolicyProvider<T> provider) where T : class
+        public static IMethodFamilyConfigurationExpression DefaultIs<T>(this ICachePolicyProvider<T> provider) where T : class
         {
             var policy = provider.GetDefaultPolicy();
 
-            return policy;
+            return new MethodFamilyConfigExpression(policy);
         }
     }
 }

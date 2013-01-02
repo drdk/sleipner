@@ -26,6 +26,11 @@ namespace DR.Sleipner.CacheProviders.DictionaryCache
                     return new CachedObject<TResult>(CachedObjectState.Exception, cachedObject.ThrownException);
                 }
 
+                if (cachedObject.AbsoluteDuration.TotalSeconds > 0 && cachedObject.Created + cachedObject.AbsoluteDuration < DateTime.Now)
+                {
+                    return new CachedObject<TResult>(CachedObjectState.None, null); 
+                }
+
                 return new CachedObject<TResult>(cachedObject.IsExpired ? CachedObjectState.Stale : CachedObjectState.Fresh, (TResult)cachedObject.Object);
             }
 
@@ -35,14 +40,19 @@ namespace DR.Sleipner.CacheProviders.DictionaryCache
         public void StoreItem<TResult>(ProxyRequest<T, TResult> proxyRequest, CachePolicy cachePolicy, TResult item)
         {
             var cacheKey = new DictionaryCacheKey(proxyRequest.Method, proxyRequest.Parameters);
-            _cache[cacheKey] = new DictionaryCachedItem(item, TimeSpan.FromSeconds(cachePolicy.CacheDuration));
+            var duration = TimeSpan.FromSeconds(cachePolicy.CacheDuration);
+            var absoluteDuration = TimeSpan.FromSeconds(cachePolicy.MaxAge);
+
+            _cache[cacheKey] = new DictionaryCachedItem(item, duration, absoluteDuration);
         }
 
         public void StoreException<TResult>(ProxyRequest<T, TResult> proxyRequest, CachePolicy cachePolicy, Exception exception)
         {
             var cacheKey = new DictionaryCacheKey(proxyRequest.Method, proxyRequest.Parameters);
+            var duration = TimeSpan.FromSeconds(cachePolicy.CacheDuration);
+            var absoluteDuration = TimeSpan.FromSeconds(cachePolicy.MaxAge);
 
-            _cache[cacheKey] = new DictionaryCachedItem(exception, TimeSpan.FromSeconds(cachePolicy.ExceptionCacheDuration));
+            _cache[cacheKey] = new DictionaryCachedItem(exception, duration, absoluteDuration);
         }
 
         public void Purge(Expression<Action<T>> action)
