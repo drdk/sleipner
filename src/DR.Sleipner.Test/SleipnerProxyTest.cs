@@ -26,8 +26,12 @@ namespace DR.Sleipner.Test
             var instanceMock = new Mock<IAwesomeInterface>();
             var cacheProviderMock = new Mock<ICacheProvider<IAwesomeInterface>>();
 
-            var proxy = new SleipnerProxy<IAwesomeInterface>(instanceMock.Object, cacheProviderMock.Object);
-            proxy.Object.VoidMethod();
+            var proxy = instanceMock.Object.CreateProxy(cacheProviderMock.Object, a =>  {
+                                                                                            a.DefaultIs().DisableCache();
+                                                                                            a.For(b => b.NonCachedMethod()).ExpireAfter(1000);
+                                                                                        });
+
+            proxy.VoidMethod();
 
             instanceMock.Verify(a => a.VoidMethod(), Times.Once());
         }

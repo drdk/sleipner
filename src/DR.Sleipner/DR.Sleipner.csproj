@@ -41,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BasicCachePolicyProvider.cs" />
+    <Compile Include="Helper.cs" />
     <Compile Include="ICachePolicyProvider.cs" />
     <Compile Include="Config\IMethodFamilyConfigurationExpression.cs" />
     <Compile Include="Config\MethodFamilyConfigExpression.cs" />
