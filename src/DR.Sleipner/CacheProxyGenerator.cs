@@ -31,11 +31,7 @@ namespace DR.Sleipner
             }
 
             Type proxyType;
-            if (ProxyCache.ContainsKey(interfaceType))
-            {
-                proxyType = ProxyCache[interfaceType];
-            }
-            else
+            if(!ProxyCache.TryGetValue(interfaceType, out proxyType))
             {
                 proxyType = ProxyGenerator.CreateProxy<T>();
                 ProxyCache[interfaceType] = proxyType;
