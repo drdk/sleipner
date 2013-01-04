@@ -9,6 +9,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DR.Sleipner.EnyimMemcachedP
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DR.Sleipner.EnyimMemcachedProvider.Test", "DR.Sleipner.EnyimMemcachedProvider.Test\DR.Sleipner.EnyimMemcachedProvider.Test.csproj", "{CD76005A-DE5D-4036-B5F3-877F4EB4B274}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DR.Sleipner.Core", "DR.Sleipner.Core\DR.Sleipner.Core.csproj", "{DA3C41CB-72EB-4C0C-B6E3-C27186B46484}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Unit Tests", "Unit Tests", "{7628E24C-3B78-42C9-8E7B-00EAF1FB1745}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DR.Sleipner.Core.Test", "DR.Sleipner.Core.Test\DR.Sleipner.Core.Test.csproj", "{57F12244-DB7A-4C5F-B947-EDD77D8107F6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DR.Sleipner.TestHelpers", "DR.Sleipner.TestHelpers\DR.Sleipner.TestHelpers.csproj", "{FEC34F86-63C3-420D-AFD3-7B96C5613B66}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -31,8 +39,26 @@ Global
 		{CD76005A-DE5D-4036-B5F3-877F4EB4B274}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CD76005A-DE5D-4036-B5F3-877F4EB4B274}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CD76005A-DE5D-4036-B5F3-877F4EB4B274}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DA3C41CB-72EB-4C0C-B6E3-C27186B46484}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA3C41CB-72EB-4C0C-B6E3-C27186B46484}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA3C41CB-72EB-4C0C-B6E3-C27186B46484}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA3C41CB-72EB-4C0C-B6E3-C27186B46484}.Release|Any CPU.Build.0 = Release|Any CPU
+		{57F12244-DB7A-4C5F-B947-EDD77D8107F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{57F12244-DB7A-4C5F-B947-EDD77D8107F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{57F12244-DB7A-4C5F-B947-EDD77D8107F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{57F12244-DB7A-4C5F-B947-EDD77D8107F6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FEC34F86-63C3-420D-AFD3-7B96C5613B66}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FEC34F86-63C3-420D-AFD3-7B96C5613B66}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FEC34F86-63C3-420D-AFD3-7B96C5613B66}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FEC34F86-63C3-420D-AFD3-7B96C5613B66}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{CD76005A-DE5D-4036-B5F3-877F4EB4B274} = {7628E24C-3B78-42C9-8E7B-00EAF1FB1745}
+		{8B03F1BB-051C-4257-A1C7-C5AE5A5F247D} = {7628E24C-3B78-42C9-8E7B-00EAF1FB1745}
+		{57F12244-DB7A-4C5F-B947-EDD77D8107F6} = {7628E24C-3B78-42C9-8E7B-00EAF1FB1745}
+		{FEC34F86-63C3-420D-AFD3-7B96C5613B66} = {7628E24C-3B78-42C9-8E7B-00EAF1FB1745}
 	EndGlobalSection
 EndGlobal
