@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DR.Sleipner.Core.Test", "DR
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DR.Sleipner.TestHelpers", "DR.Sleipner.TestHelpers\DR.Sleipner.TestHelpers.csproj", "{FEC34F86-63C3-420D-AFD3-7B96C5613B66}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DR.Sleipner.Caching", "DR.Sleipner.Caching\DR.Sleipner.Caching.csproj", "{0732BAD7-1D47-455D-A86C-3AA0629FA479}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +53,10 @@ Global
 		{FEC34F86-63C3-420D-AFD3-7B96C5613B66}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FEC34F86-63C3-420D-AFD3-7B96C5613B66}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FEC34F86-63C3-420D-AFD3-7B96C5613B66}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0732BAD7-1D47-455D-A86C-3AA0629FA479}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0732BAD7-1D47-455D-A86C-3AA0629FA479}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0732BAD7-1D47-455D-A86C-3AA0629FA479}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0732BAD7-1D47-455D-A86C-3AA0629FA479}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
