@@ -19,5 +19,7 @@ namespace DR.Sleipner.CacheProviders
         void Purge<TResult>(Expression<Func<T, TResult>> expression);
         CachedObjectState GetItemState(Expression<Action<T>> action);
         void Exterminatus();
+
+        bool TryGetRaw<TResult>(ProxyRequest<T, TResult> proxyRequest, out object result);
     }
 }

@@ -75,5 +75,17 @@ namespace DR.Sleipner.CacheProviders.DictionaryCache
         {
             _cache.Clear();
         }
+
+        public bool TryGetRaw<TResult>(ProxyRequest<T, TResult> proxyRequest, out object result)
+        {
+            var cacheKey = new DictionaryCacheKey(proxyRequest.Method, proxyRequest.Parameters);
+            if (_cache.ContainsKey(cacheKey))
+            {
+                result = _cache[cacheKey];
+                return true;
+            }
+            result = null;
+            return false;
+        }
     }
 }

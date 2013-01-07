@@ -115,5 +115,22 @@ namespace DR.Sleipner.EnyimMemcachedProvider
         {
             throw new NotImplementedException("Exterminatus cannot be performed on a memcached based provider (it would exterminate the entire memcached cluster)");
         }
+
+        public bool TryGetRaw<TResult>(ProxyRequest<T, TResult> proxyRequest, out object result)
+        {
+            var key = proxyRequest.CreateHash();
+            object value;
+            if (_client.TryGet(key, out value))
+            {
+                var cachedObject = value as MemcachedObject<TResult>;
+                if (cachedObject != null)
+                {
+                    result = cachedObject;
+                    return true;
+                }
+            }
+            result = null;
+            return false;
+        }
     }
 }
