@@ -6,7 +6,7 @@ using System.Text;
 
 namespace DR.Sleipner.Core
 {
-    public interface ILookupHandler<T> where T : class
+    public interface IInterceptHandler<T> where T : class
     {
         TResult GetResult<TResult>(MethodInfo methodInfo, object[] parameters);
     }

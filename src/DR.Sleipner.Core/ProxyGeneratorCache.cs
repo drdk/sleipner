@@ -9,10 +9,10 @@ namespace DR.Sleipner.Core
         private static readonly Dictionary<Type, Type> ProxyCache = new Dictionary<Type, Type>();
         private static readonly IProxyGenerator ProxyGenerator = new ILGenProxyGenerator();
 
-        public static T GetProxy<T>(T realInstance, ILookupHandler<T> lookupHandler) where T : class
+        public static T GetProxy<T>(T realInstance, IInterceptHandler<T> interceptHandler) where T : class
         {
             var proxy = GetProxyType<T>();
-            return (T)Activator.CreateInstance(proxy, realInstance, lookupHandler);
+            return (T)Activator.CreateInstance(proxy, realInstance, interceptHandler);
         }
 
         public static Type GetProxyType<T>() where T : class

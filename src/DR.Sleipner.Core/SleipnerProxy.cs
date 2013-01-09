@@ -9,15 +9,15 @@ namespace DR.Sleipner.Core
     public class SleipnerProxy<T> where T : class
     {
         private readonly T _realInstance;
-        private readonly ILookupHandler<T> _lookupHandler;
+        private readonly IInterceptHandler<T> _interceptHandler;
         public T Object;
 
-        public SleipnerProxy(T realInstance, ILookupHandler<T> lookupHandler)
+        public SleipnerProxy(T realInstance, IInterceptHandler<T> interceptHandler)
         {
             _realInstance = realInstance;
-            _lookupHandler = lookupHandler;
+            _interceptHandler = interceptHandler;
 
-            Object = ProxyGeneratorCache.GetProxy(realInstance, lookupHandler);
+            Object = ProxyGeneratorCache.GetProxy(realInstance, interceptHandler);
         }
     }
 }

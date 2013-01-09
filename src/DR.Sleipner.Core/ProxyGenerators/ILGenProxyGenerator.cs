@@ -29,10 +29,10 @@ namespace DR.Sleipner.Core.ProxyGenerators
 
             //Create two class members: handler and realInstance
             var realInstanceField = typeBuilder.DefineField("realInstance", interfaceType, FieldAttributes.Private);
-            var lookupHandlerField = typeBuilder.DefineField("handler", typeof(ILookupHandler<T>), FieldAttributes.Private);
+            var lookupHandlerField = typeBuilder.DefineField("handler", typeof(IInterceptHandler<T>), FieldAttributes.Private);
             
             //Create the constructor
-            var cTorBuilder = typeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, new[] { interfaceType, typeof(ILookupHandler<T>) });
+            var cTorBuilder = typeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, new[] { interfaceType, typeof(IInterceptHandler<T>) });
             cTorBuilder.DefineParameter(1, ParameterAttributes.None, "realInstance");
             cTorBuilder.DefineParameter(2, ParameterAttributes.None, "handler");
 
@@ -144,7 +144,7 @@ namespace DR.Sleipner.Core.ProxyGenerators
                     methodBody.Emit(OpCodes.Stelem_Ref);                    //Store element in array
                 }
 
-                var proxyCallMethod = typeof(ILookupHandler<T>).GetMethod("GetResult");
+                var proxyCallMethod = typeof(IInterceptHandler<T>).GetMethod("GetResult");
                 proxyCallMethod = proxyCallMethod.MakeGenericMethod(new[] {method.ReturnType});
 
                 /* This generates a method call to the proxyMethod handler field. */

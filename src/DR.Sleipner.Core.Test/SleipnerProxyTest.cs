@@ -15,7 +15,7 @@ namespace DR.Sleipner.Core.Test
         public void TestVoidMethod()
         {
             var interfaceMock = new Mock<ITestInterface>();
-            var lookupHandlerMock = new Mock<ILookupHandler<ITestInterface>>();
+            var lookupHandlerMock = new Mock<IInterceptHandler<ITestInterface>>();
 
             var proxy = new SleipnerProxy<ITestInterface>(interfaceMock.Object, lookupHandlerMock.Object);
 
@@ -28,7 +28,7 @@ namespace DR.Sleipner.Core.Test
         public void TestParameterLessMethod()
         {
             var interfaceMock = new Mock<ITestInterface>();
-            var lookupHandlerMock = new Mock<ILookupHandler<ITestInterface>>();
+            var lookupHandlerMock = new Mock<IInterceptHandler<ITestInterface>>();
 
             var proxy = new SleipnerProxy<ITestInterface>(interfaceMock.Object, lookupHandlerMock.Object);
 
@@ -47,7 +47,7 @@ namespace DR.Sleipner.Core.Test
         public void TestParameteredMethod()
         {
             var interfaceMock = new Mock<ITestInterface>();
-            var lookupHandlerMock = new Mock<ILookupHandler<ITestInterface>>();
+            var lookupHandlerMock = new Mock<IInterceptHandler<ITestInterface>>();
 
             var proxy = new SleipnerProxy<ITestInterface>(interfaceMock.Object, lookupHandlerMock.Object);
 

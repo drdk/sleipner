@@ -42,7 +42,7 @@
   <ItemGroup>
     <Compile Include="ProxyGeneratorCache.cs" />
     <Compile Include="ProxyGenerators\ILGenProxyGenerator.cs" />
-    <Compile Include="ILookupHandler.cs" />
+    <Compile Include="IInterceptHandler.cs" />
     <Compile Include="IProxyGenerator.cs" />
     <Compile Include="ProxyTypeMustBeInterfaceException.cs" />
     <Compile Include="SleipnerProxy.cs" />

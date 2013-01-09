@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{0732BAD7-1D47-455D-A86C-3AA0629FA479}</ProjectGuid>
+    <ProjectGuid>{2BEFE972-9D10-4D53-B6AD-850A7B819AAF}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>DR.Sleipner.Caching</RootNamespace>
-    <AssemblyName>DR.Sleipner.Caching</AssemblyName>
+    <RootNamespace>DR.Sleipner.Caching.Test</RootNamespace>
+    <AssemblyName>DR.Sleipner.Caching.Test</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -31,6 +31,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Moq">
+      <HintPath>..\packages\Moq.4.0.10827\lib\NET40\Moq.dll</HintPath>
+    </Reference>
+    <Reference Include="nunit.framework">
+      <HintPath>..\packages\NUnit.2.6.1\lib\nunit.framework.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -40,23 +46,27 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AsyncronousLookupHandler.cs" />
-    <Compile Include="Contract\ILookupContextBuilder.cs" />
-    <Compile Include="DefaultLookupContextBuilder.cs" />
-    <Compile Include="DelegateFactory.cs" />
-    <Compile Include="Contract\ILookupHandler.cs" />
-    <Compile Include="Contract\IPolicyProvider.cs" />
-    <Compile Include="LookupContext.cs" />
-    <Compile Include="LookupDispatcher.cs" />
-    <Compile Include="Contract\ICacheProvider.cs" />
-    <Compile Include="Model\CachedObject.cs" />
-    <Compile Include="Model\CachedObjectState.cs" />
+    <Compile Include="AsyncronousLookupHandlerTest.cs" />
+    <Compile Include="DefaultLookupContextBuilderTest.cs" />
+    <Compile Include="Contract\ITestInterface.cs" />
+    <Compile Include="LookupDispatcherTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DR.Sleipner.Caching\DR.Sleipner.Caching.csproj">
+      <Project>{0732BAD7-1D47-455D-A86C-3AA0629FA479}</Project>
+      <Name>DR.Sleipner.Caching</Name>
+    </ProjectReference>
     <ProjectReference Include="..\DR.Sleipner.Core\DR.Sleipner.Core.csproj">
       <Project>{DA3C41CB-72EB-4C0C-B6E3-C27186B46484}</Project>
       <Name>DR.Sleipner.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DR.Sleipner.TestHelpers\DR.Sleipner.TestHelpers.csproj">
+      <Project>{FEC34F86-63C3-420D-AFD3-7B96C5613B66}</Project>
+      <Name>DR.Sleipner.TestHelpers</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
