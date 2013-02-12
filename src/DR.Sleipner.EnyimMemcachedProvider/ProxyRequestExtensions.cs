@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -51,6 +52,11 @@ namespace DR.Sleipner.EnyimMemcachedProvider
                     
                 }
                 builder.Append("]");
+            }
+            else if (value is DateTime)
+            {
+                var dt = (DateTime)value;
+                builder.Append(dt.ToString(CultureInfo.InvariantCulture));
             }
             else
             {
