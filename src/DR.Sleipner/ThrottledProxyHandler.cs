@@ -43,6 +43,7 @@ namespace DR.Sleipner
             var cachedItem = _cacheProvider.GetItem(proxyRequest, cachePolicy) ?? new CachedObject<TResult>(CachedObjectState.None, null);
 
             var sleiperTransactionLog = new LoggedTransaction("Started " + cachedItem.State);
+            sleiperTransactionLog.AddNote("Params: " + string.Join(", ", proxyRequest.Parameters));
             _logger.Log(sleiperTransactionLog);
 
             if (cachedItem.State == CachedObjectState.Fresh)
