@@ -17,16 +17,18 @@ namespace DR.Sleipner
         private readonly T _realInstance;
         private readonly ICachePolicyProvider<T> _cachePolicyProvider;
         private readonly ICacheProvider<T> _cacheProvider;
+        private readonly ILogger<T> _logger;
 
         private readonly IRequestSyncronizer _syncronizer = new RequestSyncronizer();
 
         private readonly IDictionary<MethodInfo, DelegateFactory.LateBoundMethod> _lateBoundMethodCache = new Dictionary<MethodInfo, DelegateFactory.LateBoundMethod>(); 
 
-        public ThrottledProxyHandler(T realInstance, ICachePolicyProvider<T> cachePolicyProvider, ICacheProvider<T> cacheProvider)
+        public ThrottledProxyHandler(T realInstance, ICachePolicyProvider<T> cachePolicyProvider, ICacheProvider<T> cacheProvider, ILogger<T> logger)
         {
             _realInstance = realInstance;
             _cachePolicyProvider = cachePolicyProvider;
             _cacheProvider = cacheProvider;
+            _logger = logger;
         }
 
         public TResult HandleRequest<TResult>(ProxyRequest<T, TResult> proxyRequest)
@@ -40,13 +42,22 @@ namespace DR.Sleipner
 
             var cachedItem = _cacheProvider.GetItem(proxyRequest, cachePolicy) ?? new CachedObject<TResult>(CachedObjectState.None, null);
 
+            var sleiperTransactionLog = new LoggedTransaction("Started " + cachedItem.State);
+            _logger.Log(sleiperTransactionLog);
+
             if (cachedItem.State == CachedObjectState.Fresh)
             {
+                sleiperTransactionLog.Ended = DateTime.Now;
+                sleiperTransactionLog.AddNote("Returned item directly");
+
                 return cachedItem.Object;
             }
 
             if (cachedItem.State == CachedObjectState.Exception)
             {
+                sleiperTransactionLog.Ended = DateTime.Now;
+                sleiperTransactionLog.AddNote("Threw cached exception to called");
+
                 throw cachedItem.ThrownException;
             }
 
@@ -55,14 +66,27 @@ namespace DR.Sleipner
 
             if (_syncronizer.ShouldWaitForHandle(requestKey, out waitHandle))
             {
+                sleiperTransactionLog.AddNote("Got wait handle");
                 if (cachedItem.State == CachedObjectState.Stale)
-                    return cachedItem.Object;
+                {
+                    sleiperTransactionLog.AddNote("Current item is stale, so returning object without waiting");
+                    sleiperTransactionLog.Ended = DateTime.Now;
 
-                return waitHandle.WaitForResult();
+                    return cachedItem.Object;
+                }
+
+                sleiperTransactionLog.AddNote("Waiting for release from wait handle");
+                var result = waitHandle.WaitForResult();
+
+                sleiperTransactionLog.Ended = DateTime.Now;
+                sleiperTransactionLog.AddNote("Done waiting");
+
+                return result;
             }
 
             if (cachedItem.State == CachedObjectState.Stale)
             {
+                sleiperTransactionLog.AddNote("Dispatching asyncronous handle");
                 Func<TResult> loader = () => GetRealResult(proxyRequest);
 
                 loader.BeginInvoke(callback =>
@@ -72,11 +96,15 @@ namespace DR.Sleipner
 
                     try
                     {
+                        sleiperTransactionLog.AddNote("Waiting for invoke to end");
                         asyncResult = loader.EndInvoke(callback);
+                        sleiperTransactionLog.AddNote("Invoke ended");
                         _cacheProvider.StoreItem(proxyRequest, cachePolicy, asyncResult);
+                        sleiperTransactionLog.AddNote("Object stored");
                     }
                     catch (Exception e)
                     {
+                        sleiperTransactionLog.AddNote("Invoke threw exception: " + e.Message);
                         if (cachePolicy.BubbleExceptions)
                         {
                             _cacheProvider.StoreException(proxyRequest, cachePolicy, e);
@@ -96,12 +124,16 @@ namespace DR.Sleipner
                         }
                         else
                         {
+                            sleiperTransactionLog.AddNote("Releasing result");
                             _syncronizer.Release(requestKey, asyncResult);
                         }
+
+                        sleiperTransactionLog.Ended = DateTime.Now;
                     }
 
                 }, null);
 
+                sleiperTransactionLog.AddNote("Returning object to caller");
                 return cachedItem.Object;
             }
 
