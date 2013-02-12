@@ -10,6 +10,18 @@ namespace DR.Sleipner.EnyimMemcachedProvider
 {
     public static class ProxyRequestExtensions
     {
+        public static string CreateStringRepresentation<T, TResult>(this ProxyRequest<T, TResult> proxyRequest) where T : class
+        {
+            var sb = new StringBuilder();
+            sb.Append(typeof(T).FullName);
+            sb.Append(" - ");
+            sb.Append(proxyRequest.Method);
+            sb.Append(" - ");
+            sb.AddParameterRepresentations(proxyRequest.Parameters);
+
+            return sb.ToString();
+        }
+
         public static string CreateHash<T, TResult>(this ProxyRequest<T, TResult> proxyRequest) where T : class
         {
             var sb = new StringBuilder();

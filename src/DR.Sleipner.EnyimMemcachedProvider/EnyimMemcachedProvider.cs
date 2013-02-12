@@ -36,6 +36,9 @@ namespace DR.Sleipner.EnyimMemcachedProvider
             var log = new LoggedTransaction("Memcached GET");
             _logger.Log(log);
 
+            var stringRep = proxyRequest.CreateStringRepresentation();
+            log.AddNote("Method: " + stringRep);
+
             var key = proxyRequest.CreateHash();
             log.AddNote("Key: " + key);
 
@@ -75,6 +78,9 @@ namespace DR.Sleipner.EnyimMemcachedProvider
         {
             var log = new LoggedTransaction("Memcached STORE");
             _logger.Log(log);
+
+            var stringRep = proxyRequest.CreateStringRepresentation();
+            log.AddNote("Method: " + stringRep);
 
             var key = proxyRequest.CreateHash();
             log.AddNote("Key: " + key);
