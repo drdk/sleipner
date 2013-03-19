@@ -24,7 +24,8 @@ namespace DR.Sleipner.EnyimMemcachedProvider
             var hashAlgorithm = new SHA256Managed();
             var hash = hashAlgorithm.ComputeHash(bytes);
             
-            return Convert.ToBase64String(hash);
+            var key = Convert.ToBase64String(hash);
+            return key;
         }
 
         public static void AddParameterRepresentations(this StringBuilder builder, object value)
@@ -58,9 +59,13 @@ namespace DR.Sleipner.EnyimMemcachedProvider
                 var dt = (DateTime)value;
                 builder.Append(dt.ToString(CultureInfo.InvariantCulture));
             }
+            else if (value is Boolean)
+            {
+                builder.Append(((bool)value).ToString(CultureInfo.InvariantCulture));
+            }
             else
             {
-                builder.Append(value);
+                builder.Append(value.ToString());
             }
         }
     }
