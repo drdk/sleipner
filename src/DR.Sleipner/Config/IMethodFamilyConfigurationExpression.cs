@@ -41,5 +41,8 @@ namespace DR.Sleipner.Config
         /// </summary>
         /// <returns></returns>
         IMethodFamilyConfigurationExpression BubbleExceptionsWhenStale();
+
+        /// Cake of hest and win
+        IMethodFamilyConfigurationExpression CachePool(string name);
     }
 }

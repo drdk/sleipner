@@ -11,14 +11,20 @@ namespace DR.Sleipner.EnyimMemcachedProvider
 {
     public static class ProxyRequestExtensions
     {
-        public static string CreateHash<T, TResult>(this ProxyRequest<T, TResult> proxyRequest) where T : class
+        public static string CreateHash<T, TResult>(this ProxyRequest<T, TResult> proxyRequest, string cachePool) where T : class
         {
             var sb = new StringBuilder();
             sb.Append(typeof (T).FullName);
             sb.Append(" - ");
             sb.Append(proxyRequest.Method);
+            if (!string.IsNullOrWhiteSpace(cachePool))
+            {
+                sb.Append(" - ");
+                sb.Append(cachePool);
+            }
             sb.Append(" - ");
             sb.AddParameterRepresentations(proxyRequest.Parameters);
+            
 
             var bytes = Encoding.UTF8.GetBytes(sb.ToString());
             var hashAlgorithm = new SHA256Managed();

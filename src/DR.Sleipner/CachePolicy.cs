@@ -6,5 +6,6 @@
         public int MaxAge;
         public int ExceptionCacheDuration = 10;
         public bool BubbleExceptions;
+        public string CachePool = "";
     }
 }
