@@ -42,7 +42,10 @@ namespace DR.Sleipner.Config
         /// <returns></returns>
         IMethodFamilyConfigurationExpression BubbleExceptionsWhenStale();
 
-        /// Cake of hest and win
+        /// <summary>
+        /// This is used to set a cachepool name.
+        /// </summary>
+        /// <returns></returns>
         IMethodFamilyConfigurationExpression CachePool(string name);
     }
 }
