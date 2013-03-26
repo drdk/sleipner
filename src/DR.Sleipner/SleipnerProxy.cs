@@ -24,7 +24,11 @@ namespace DR.Sleipner
 
         internal IList<IConfiguredMethod<T>> ConfiguredMethods = new List<IConfiguredMethod<T>>(); 
 
-        public SleipnerProxy(T realInstance, ICacheProvider<T> cacheProvider)
+        public SleipnerProxy(T realInstance, ICacheProvider<T> cacheProvider) : this(realInstance, cacheProvider, new NullLogger<T>())
+        {
+        }
+
+        public SleipnerProxy(T realInstance, ICacheProvider<T> cacheProvider, ILogger<T> logger)
         {
             if (!typeof (T).IsInterface)
             {
@@ -35,7 +39,7 @@ namespace DR.Sleipner
 
             _realInstance = realInstance;
             CachePolicyProvider = new BasicConfigurationProvider<T>();
-            _proxyHandler = new ThrottledProxyHandler<T>(_realInstance, CachePolicyProvider, cacheProvider);
+            _proxyHandler = new ThrottledProxyHandler<T>(_realInstance, CachePolicyProvider, cacheProvider, logger);
             
             Object = (T)Activator.CreateInstance(proxyType, _realInstance, _proxyHandler);
         }

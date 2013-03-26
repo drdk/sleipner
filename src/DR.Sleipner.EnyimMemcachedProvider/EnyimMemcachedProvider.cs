@@ -18,15 +18,30 @@ namespace DR.Sleipner.EnyimMemcachedProvider
     public class EnyimMemcachedProvider<T> : ICacheProvider<T> where T : class
     {
         private readonly IMemcachedClient _client;
+        private readonly ILogger<T> _logger;
 
-        public EnyimMemcachedProvider(IMemcachedClient client)
+        public EnyimMemcachedProvider(IMemcachedClient client) : this(client, new NullLogger<T>())
+        {
+            
+        }
+
+        public EnyimMemcachedProvider(IMemcachedClient client, ILogger<T> logger)
         {
             _client = client;
+            _logger = logger;
         }
 
         public CachedObject<TResult> GetItem<TResult>(ProxyRequest<T, TResult> proxyRequest, CachePolicy cachePolicy)
         {
+            var log = new LoggedTransaction("Memcached GET");
+            _logger.Log(log);
+
+            var stringRep = proxyRequest.CreateStringRepresentation(cachePolicy.CachePool);
+            log.AddNote("Method: " + stringRep);
+
             var key = proxyRequest.CreateHash(cachePolicy.CachePool);
+
+            log.AddNote("Key: " + key);
 
             object value;
             if (_client.TryGet(key, out value))
@@ -36,6 +51,9 @@ namespace DR.Sleipner.EnyimMemcachedProvider
                 {
                     return new CachedObject<TResult>(CachedObjectState.None, null);
                 }
+
+                log.AddNote("Result was created on: " + cachedObject.Created);
+                log.Ended = DateTime.Now;
 
                 if (cachedObject.IsException && cachedObject.Created.AddSeconds(cachePolicy.ExceptionCacheDuration) > DateTime.Now)
                 {
@@ -51,26 +69,44 @@ namespace DR.Sleipner.EnyimMemcachedProvider
                 return new CachedObject<TResult>(state, cachedObject.Object);
             }
 
+            log.AddNote("No result in cache");
+            log.Ended = DateTime.Now;
+
             return new CachedObject<TResult>(CachedObjectState.None, null);
         }
 
         public void StoreItem<TResult>(ProxyRequest<T, TResult> proxyRequest, CachePolicy cachePolicy, TResult item)
         {
+            var log = new LoggedTransaction("Memcached STORE");
+            _logger.Log(log);
+
+            var stringRep = proxyRequest.CreateStringRepresentation(cachePolicy.CachePool);
+            log.AddNote("Method: " + stringRep);
+
             var key = proxyRequest.CreateHash(cachePolicy.CachePool);
+
+            log.AddNote("Key: " + key);
+
             var cachedObject = new MemcachedObject<TResult>()
                                    {
                                        Created = DateTime.Now,
                                        Object = item
                                    };
 
+            log.AddNote("Created is: " + cachedObject.Created);
+
             if(cachePolicy.MaxAge > 0)
             {
-                _client.Store(StoreMode.Set, key, cachedObject, TimeSpan.FromSeconds(cachePolicy.MaxAge));
+                var result = _client.Store(StoreMode.Set, key, cachedObject, TimeSpan.FromSeconds(cachePolicy.MaxAge));
+                log.AddNote("Store with validFor. Result: " + result);
             }
             else
             {
-                _client.Store(StoreMode.Set, key, cachedObject);
+                var result = _client.Store(StoreMode.Set, key, cachedObject);
+                log.AddNote("Store. Result: " + result);
             }
+
+            log.Ended = DateTime.Now;
         }
 
         public void StoreException<TResult>(ProxyRequest<T, TResult> proxyRequest, CachePolicy cachePolicy, Exception exception)

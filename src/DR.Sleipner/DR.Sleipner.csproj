@@ -67,10 +67,13 @@
     <Compile Include="CacheProxy\Syncronizer\RequestKey.cs" />
     <Compile Include="CacheProxy\Syncronizer\IRequestSyncronizer.cs" />
     <Compile Include="CacheProxy\Syncronizer\RequestSyncronizer.cs" />
+    <Compile Include="ILogger.cs" />
+    <Compile Include="LoggedTransaction.cs" />
     <Compile Include="Model\CachedObject.cs" />
     <Compile Include="Model\CachedObjectState.cs" />
     <Compile Include="CacheProxy\DelegateFactory.cs" />
     <Compile Include="CacheProxy\IProxyGenerator.cs" />
+    <Compile Include="NullLogger.cs" />
     <Compile Include="ThrottledProxyHandler.cs" />
     <Compile Include="ProxyTypeMustBeInterfaceException.cs" />
     <Compile Include="CacheProxy\Generators\ILGenProxyGenerator.cs" />

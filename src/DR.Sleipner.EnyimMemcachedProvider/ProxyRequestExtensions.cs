@@ -11,10 +11,10 @@ namespace DR.Sleipner.EnyimMemcachedProvider
 {
     public static class ProxyRequestExtensions
     {
-        public static string CreateHash<T, TResult>(this ProxyRequest<T, TResult> proxyRequest, string cachePool) where T : class
+        public static string CreateStringRepresentation<T, TResult>(this ProxyRequest<T, TResult> proxyRequest, string cachePool) where T : class
         {
             var sb = new StringBuilder();
-            sb.Append(typeof (T).FullName);
+            sb.Append(typeof(T).FullName);
             sb.Append(" - ");
             sb.Append(proxyRequest.Method);
             if (!string.IsNullOrWhiteSpace(cachePool))
@@ -24,9 +24,14 @@ namespace DR.Sleipner.EnyimMemcachedProvider
             }
             sb.Append(" - ");
             sb.AddParameterRepresentations(proxyRequest.Parameters);
-            
 
-            var bytes = Encoding.UTF8.GetBytes(sb.ToString());
+            return sb.ToString();
+        }
+
+        public static string CreateHash<T, TResult>(this ProxyRequest<T, TResult> proxyRequest, string cachePool) where T : class
+        {
+
+            var bytes = Encoding.UTF8.GetBytes(CreateStringRepresentation(proxyRequest, cachePool));
             var hashAlgorithm = new SHA256Managed();
             var hash = hashAlgorithm.ComputeHash(bytes);
             
@@ -69,7 +74,7 @@ namespace DR.Sleipner.EnyimMemcachedProvider
             {
                 builder.Append(((bool)value).ToString(CultureInfo.InvariantCulture));
             }
-            else
+            else 
             {
                 builder.Append(value.ToString());
             }
