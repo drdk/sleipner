@@ -58,11 +58,11 @@ namespace DR.Sleipner.EnyimMemcachedProvider.Transcoders
                             {
                                 return jsonSerializer.Deserialize(textReader);
                             }
-                            catch (JsonReaderException e)
+                            catch (JsonReaderException)
                             {
                                 return null;
                             }
-                            catch (JsonSerializationException e)
+                            catch (JsonSerializationException)
                             {
                                 return null;
                             }
@@ -70,7 +70,7 @@ namespace DR.Sleipner.EnyimMemcachedProvider.Transcoders
                     }
                 }
             }
-            catch(InvalidDataException e)
+            catch (InvalidDataException)
             {
                 //If zipstream was invalid
                 return null;
