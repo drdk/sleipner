@@ -51,11 +51,11 @@ namespace DR.Sleipner.EnyimMemcachedProvider.Transcoders
 
                         return dynamicEntity;
                     }
-                    catch(JsonReaderException e)
+                    catch (JsonReaderException)
                     {
                         return null;
                     }
-                    catch(JsonSerializationException )
+                    catch (JsonSerializationException)
                     {
                         return null;
                     }
