@@ -28,7 +28,7 @@ namespace DR.Sleipner.EnyimMemcachedProvider
             return sb.ToString();
         }
 
-        public static string CreateHash<T, TResult>(this ProxyRequest<T, TResult> proxyRequest, string cachePool) where T : class
+        public static string CreateHash<T, TResult>(this ProxyRequest<T, TResult> proxyRequest, string cachePool = null) where T : class
         {
 
             var bytes = Encoding.UTF8.GetBytes(CreateStringRepresentation(proxyRequest, cachePool));

@@ -277,7 +277,7 @@ namespace DR.Sleipner.Test
 
             sleipner.Object.ParameterlessMethod();
 
-            Thread.Sleep(1000);
+            Thread.Sleep(3000);
 
             instanceMock.Verify(a => a.ParameterlessMethod(), Times.Once());
             cacheProviderMock.Verify(a => a.GetItem(proxyContext, cachePolicy), Times.Once());
@@ -295,7 +295,7 @@ namespace DR.Sleipner.Test
             policyProvider.DefaultIs().CacheFor(60);
             var cacheProvider = new Mock<ICacheProvider<IAwesomeInterface>>(MockBehavior.Loose); 
 
-            var handler = new ThrottledProxyHandler<IAwesomeInterface>(instanceMock.Object, policyProvider, cacheProvider.Object);
+            var handler = new ThrottledProxyHandler<IAwesomeInterface>(instanceMock.Object, policyProvider, cacheProvider.Object, null);
 
             var proxyContext = ProxyRequest<IAwesomeInterface>.FromExpression(a => a.ParameteredMethod("", 1));
 
