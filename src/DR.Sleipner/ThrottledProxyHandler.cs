@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 using DR.Sleipner.CacheProviders;
 using DR.Sleipner.CacheProxy;
 using DR.Sleipner.CacheProxy.Syncronizer;
@@ -20,7 +21,7 @@ namespace DR.Sleipner
 
         private readonly IRequestSyncronizer _syncronizer = new RequestSyncronizer();
 
-        private readonly IDictionary<MethodInfo, DelegateFactory.LateBoundMethod> _lateBoundMethodCache = new Dictionary<MethodInfo, DelegateFactory.LateBoundMethod>(); 
+        private readonly IDictionary<MethodInfo, DelegateFactory.LateBoundMethod> _lateBoundMethodCache = new Dictionary<MethodInfo, DelegateFactory.LateBoundMethod>();
 
         public ThrottledProxyHandler(T realInstance, ICachePolicyProvider<T> cachePolicyProvider, ICacheProvider<T> cacheProvider)
         {
@@ -63,44 +64,52 @@ namespace DR.Sleipner
 
             if (cachedItem.State == CachedObjectState.Stale)
             {
-                Func<TResult> loader = () => GetRealResult(proxyRequest);
+                var task = Task.Factory.StartNew(() => GetRealResult(proxyRequest), TaskCreationOptions.None)
+                    .ContinueWith(result =>
+                        {
+                            if (result.Exception != null)
+                            {
+                                var innerException = result.Exception.InnerExceptions.FirstOrDefault();
+                                result.Exception.Handle(e => true);
 
-                loader.BeginInvoke(callback =>
-                {
-                    Exception asyncRequestThrownException = null;
-                    var asyncResult = default(TResult);
+                                if (innerException == null)
+                                    return;
 
-                    try
-                    {
-                        asyncResult = loader.EndInvoke(callback);
-                        _cacheProvider.StoreItem(proxyRequest, cachePolicy, asyncResult);
-                    }
-                    catch (Exception e)
-                    {
-                        if (cachePolicy.BubbleExceptions)
+                                try
+                                {
+                                    if (cachePolicy.BubbleExceptions) //If exceptions are set to bubble we must throw it to caller and store it.
+                                    {
+                                        _cacheProvider.StoreException(proxyRequest, cachePolicy, innerException);
+                                    }
+                                    else
+                                    {
+                                        _cacheProvider.StoreItem(proxyRequest, cachePolicy, cachedItem.Object);
+                                    }
+                                }
+                                finally
+                                {
+                                    _syncronizer.ReleaseWithException<TResult>(requestKey, innerException);
+                                }
+                            }
+                            else
+                            {
+                                try
+                                {
+                                    _cacheProvider.StoreItem(proxyRequest, cachePolicy, result.Result);
+                                }
+                                finally
+                                {
+                                    _syncronizer.Release(requestKey, result.Result);
+                                }
+                            }
+                        }, TaskContinuationOptions.None)
+                    .ContinueWith(result =>
                         {
-                            _cacheProvider.StoreException(proxyRequest, cachePolicy, e);
-                            asyncRequestThrownException = e;
-                        }
-                        else
-                        {
-                            asyncResult = cachedItem.Object;
-                            _cacheProvider.StoreItem(proxyRequest, cachePolicy, asyncResult);
-                        }
-                    }
-                    finally
-                    {
-                        if (asyncRequestThrownException != null)
-                        {
-                            _syncronizer.ReleaseWithException<TResult>(requestKey, asyncRequestThrownException);
-                        }
-                        else
-                        {
-                            _syncronizer.Release(requestKey, asyncResult);
-                        }
-                    }
-
-                }, null);
+                            if (result.Exception != null)
+                            {
+                                result.Exception.Handle(e => true);
+                            }
+                        }, TaskContinuationOptions.OnlyOnFaulted);
 
                 return cachedItem.Object;
             }
@@ -134,12 +143,12 @@ namespace DR.Sleipner
 
             return realInstanceResult;
         }
-        
+
         private TResult GetRealResult<TResult>(ProxyRequest<T, TResult> proxyRequest)
         {
             var delegateMethod = GetLateBoundMethod(proxyRequest.Method);
 
-            return (TResult)delegateMethod(_realInstance, proxyRequest.Parameters);
+            return (TResult) delegateMethod(_realInstance, proxyRequest.Parameters);
         }
 
         private DelegateFactory.LateBoundMethod GetLateBoundMethod(MethodInfo methodInfo)
@@ -152,6 +161,6 @@ namespace DR.Sleipner
             }
 
             return lateBoundMethod;
-        } 
+        }
     }
 }

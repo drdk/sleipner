@@ -277,7 +277,7 @@ namespace DR.Sleipner.Test
 
             sleipner.Object.ParameterlessMethod();
 
-            Thread.Sleep(1000);
+            Thread.Sleep(3000);
 
             instanceMock.Verify(a => a.ParameterlessMethod(), Times.Once());
             cacheProviderMock.Verify(a => a.GetItem(proxyContext, cachePolicy), Times.Once());
