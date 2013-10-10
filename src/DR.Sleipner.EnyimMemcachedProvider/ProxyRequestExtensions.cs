@@ -11,7 +11,7 @@ namespace DR.Sleipner.EnyimMemcachedProvider
 {
     public static class ProxyRequestExtensions
     {
-        public static string CreateHash<T, TResult>(this ProxyRequest<T, TResult> proxyRequest, string cachePool) where T : class
+        public static string CreateHash<T, TResult>(this ProxyRequest<T, TResult> proxyRequest, string cachePool = null) where T : class
         {
             var sb = new StringBuilder();
             sb.Append(typeof (T).FullName);

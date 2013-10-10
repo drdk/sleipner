@@ -93,7 +93,7 @@ namespace DR.Sleipner.EnyimMemcachedProvider
             }
         }
 
-        public void Purge<TResult>(Expression<Func<T, TResult>> expression, string cachePool)
+        public void Purge<TResult>(Expression<Func<T, TResult>> expression, string cachePool = null)
         {
             var methodInfo = SymbolExtensions.GetMethodInfo(expression);
             var parameters = SymbolExtensions.GetParameter(expression);
