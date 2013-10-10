@@ -51,5 +51,12 @@ namespace DR.Sleipner.Config
 
             return this;
         }
+
+        public IMethodFamilyConfigurationExpression CachePool(string name)
+        {
+            _policy.CachePool = name;
+
+            return this;
+        }
     }
 }

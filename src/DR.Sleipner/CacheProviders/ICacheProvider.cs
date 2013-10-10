@@ -16,10 +16,10 @@ namespace DR.Sleipner.CacheProviders
         void StoreItem<TResult>(ProxyRequest<T, TResult> proxyRequest, CachePolicy cachePolicy, TResult item);
         void StoreException<TResult>(ProxyRequest<T, TResult> proxyRequest, CachePolicy cachePolicy, Exception exception);
 
-        void Purge<TResult>(Expression<Func<T, TResult>> expression);
+        void Purge<TResult>(Expression<Func<T, TResult>> expression, string cachePool = "");
         CachedObjectState GetItemState(Expression<Action<T>> action);
         void Exterminatus();
 
-        bool TryGetRaw<TResult>(ProxyRequest<T, TResult> proxyRequest, out object result);
+        bool TryGetRaw<TResult>(ProxyRequest<T, TResult> proxyRequest, out object result, string cachePool = "");
     }
 }

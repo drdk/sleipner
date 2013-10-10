@@ -26,7 +26,7 @@ namespace DR.Sleipner.EnyimMemcachedProvider
 
         public CachedObject<TResult> GetItem<TResult>(ProxyRequest<T, TResult> proxyRequest, CachePolicy cachePolicy)
         {
-            var key = proxyRequest.CreateHash();
+            var key = proxyRequest.CreateHash(cachePolicy.CachePool);
 
             object value;
             if (_client.TryGet(key, out value))
@@ -56,7 +56,7 @@ namespace DR.Sleipner.EnyimMemcachedProvider
 
         public void StoreItem<TResult>(ProxyRequest<T, TResult> proxyRequest, CachePolicy cachePolicy, TResult item)
         {
-            var key = proxyRequest.CreateHash();
+            var key = proxyRequest.CreateHash(cachePolicy.CachePool);
             var cachedObject = new MemcachedObject<TResult>()
                                    {
                                        Created = DateTime.Now,
@@ -75,7 +75,7 @@ namespace DR.Sleipner.EnyimMemcachedProvider
 
         public void StoreException<TResult>(ProxyRequest<T, TResult> proxyRequest, CachePolicy cachePolicy, Exception exception)
         {
-            var key = proxyRequest.CreateHash();
+            var key = proxyRequest.CreateHash(cachePolicy.CachePool);
             var cachedObject = new MemcachedObject<TResult>()
             {
                 Created = DateTime.Now,
@@ -93,13 +93,13 @@ namespace DR.Sleipner.EnyimMemcachedProvider
             }
         }
 
-        public void Purge<TResult>(Expression<Func<T, TResult>> expression)
+        public void Purge<TResult>(Expression<Func<T, TResult>> expression, string cachePool)
         {
             var methodInfo = SymbolExtensions.GetMethodInfo(expression);
             var parameters = SymbolExtensions.GetParameter(expression);
             var proxyExpression = new ProxyRequest<T, TResult>(methodInfo, parameters);
 
-            var hash = proxyExpression.CreateHash();
+            var hash = proxyExpression.CreateHash(cachePool);
             _client.Remove(hash);
         }
 
@@ -116,9 +116,9 @@ namespace DR.Sleipner.EnyimMemcachedProvider
             throw new NotImplementedException("Exterminatus cannot be performed on a memcached based provider (it would exterminate the entire memcached cluster)");
         }
 
-        public bool TryGetRaw<TResult>(ProxyRequest<T, TResult> proxyRequest, out object result)
+        public bool TryGetRaw<TResult>(ProxyRequest<T, TResult> proxyRequest, out object result, string cachePool)
         {
-            var key = proxyRequest.CreateHash();
+            var key = proxyRequest.CreateHash(cachePool);
             object value;
             if (_client.TryGet(key, out value))
             {
