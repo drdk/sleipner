@@ -1,0 +1,23 @@
+﻿<?xml version="1.0"?>
+<!--
+  For more information on how to configure your ASP.NET application, please visit
+  http://go.microsoft.com/fwlink/?LinkId=152368
+  -->
+
+<configuration xmlns:xdt="http://schemas.microsoft.com/XML-Document-Transform">
+  <configSections xdt:Transform="InsertIfMissing">
+  </configSections>
+  <configSections>
+    <sectionGroup name="enyim.com" xdt:Transform="InsertIfMissing">
+      <section name="memcached" type="Enyim.Caching.Configuration.MemcachedClientSection, Enyim.Caching" />
+    </sectionGroup>
+  </configSections>
+  <enyim.com xdt:Transform="InsertIfMissing">
+    <memcached protocol="Binary">
+      <servers>
+        <add address="localhost" port="11211" />
+      </servers>
+      <transcoder type="DR.Sleipner.EnyimMemcachedProvider.Transcoders.ZippedNewtonsoftTranscoder, DR.Sleipner.EnyimMemcachedProvider" factory="DR.Sleipner.EnyimMemcachedProvider.Transcoders.ZippedNewtonsoftProvider, DR.Sleipner.EnyimMemcachedProvider" />
+    </memcached>
+  </enyim.com>
+</configuration>
