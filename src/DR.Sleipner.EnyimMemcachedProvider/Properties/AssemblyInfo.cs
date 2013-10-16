@@ -6,9 +6,9 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("DR.Sleipner.EnyimMemcachedProvider")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Sleipner caching framework")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Microsoft")]
+[assembly: AssemblyCompany("Jonas Swiatek")]
 [assembly: AssemblyProduct("DR.Sleipner.EnyimMemcachedProvider")]
 [assembly: AssemblyCopyright("Copyright © Microsoft 2012")]
 [assembly: AssemblyTrademark("")]
