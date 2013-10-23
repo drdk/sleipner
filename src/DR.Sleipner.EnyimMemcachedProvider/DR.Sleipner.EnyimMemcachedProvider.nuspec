@@ -12,8 +12,8 @@
     <copyright>Copyright 2013</copyright>
     <tags>memcached caching transparent-proxy</tags>
   </metadata>
-  <files>
+  <!--<files>
        <file src="..\nuget\content\Web.config.install.xdt" target="content\Web.config.install.xdt" />
 	   <file src="..\nuget\content\Web.config.uninstall.xdt" target="content\Web.config.uninstall.xdt" />
-   </files>
+   </files>-->
 </package>
