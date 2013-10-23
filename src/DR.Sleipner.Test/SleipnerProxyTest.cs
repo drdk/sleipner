@@ -285,7 +285,7 @@ namespace DR.Sleipner.Test
             cacheProviderMock.Verify(a => a.StoreException(proxyContext, cachePolicy, exception), Times.Once());
         }
 
-        [Test]
+        /*[Test]
         public void TestThrottleProxyHandler()
         {
             var instanceMock = new Mock<IAwesomeInterface>();
@@ -307,6 +307,6 @@ namespace DR.Sleipner.Test
             
             Assert.DoesNotThrow(() => Task.WaitAll(tasks.ToArray()));
             Assert.IsTrue(tasks.All(a => a.Result == returnObject));
-        }
+        }*/
     }
 }
