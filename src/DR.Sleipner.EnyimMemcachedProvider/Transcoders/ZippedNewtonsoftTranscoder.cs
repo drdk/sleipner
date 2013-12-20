@@ -7,14 +7,14 @@ using Newtonsoft.Json;
 
 namespace DR.Sleipner.EnyimMemcachedProvider.Transcoders
 {
-    public class ZippedNewtonsoftTranscoder : ITranscoder 
+    public class ZippedNewtonsoftTranscoder : ITranscoder
     {
         public CacheItem Serialize(object value)
         {
             var serializer = new JsonSerializer
-            {
-                TypeNameHandling = TypeNameHandling.All
-            };
+                {
+                    TypeNameHandling = TypeNameHandling.All
+                };
 
 
             using (var ms = new MemoryStream())
@@ -30,18 +30,18 @@ namespace DR.Sleipner.EnyimMemcachedProvider.Transcoders
                 var compressedBytes = ms.ToArray();
 
                 return new CacheItem()
-                {
-                    Data = new ArraySegment<byte>(compressedBytes),
-                };
+                    {
+                        Data = new ArraySegment<byte>(compressedBytes),
+                    };
             }
         }
 
         public object Deserialize(CacheItem item)
         {
             var jsonSerializer = new JsonSerializer
-            {
-                TypeNameHandling = TypeNameHandling.All
-            };
+                {
+                    TypeNameHandling = TypeNameHandling.All
+                };
 
             var data = new byte[item.Data.Count];
             Array.Copy(item.Data.Array, item.Data.Offset, data, 0, data.Length);
@@ -60,10 +60,16 @@ namespace DR.Sleipner.EnyimMemcachedProvider.Transcoders
                             }
                             catch (JsonReaderException)
                             {
+#if DEBUG
+                                throw;
+#endif
                                 return null;
                             }
                             catch (JsonSerializationException)
                             {
+#if DEBUG
+                                throw;
+#endif
                                 return null;
                             }
                         }
@@ -72,6 +78,9 @@ namespace DR.Sleipner.EnyimMemcachedProvider.Transcoders
             }
             catch (InvalidDataException)
             {
+#if DEBUG
+                throw;
+#endif
                 //If zipstream was invalid
                 return null;
             }
