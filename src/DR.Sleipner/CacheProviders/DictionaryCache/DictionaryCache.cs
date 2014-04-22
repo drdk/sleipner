@@ -22,9 +22,13 @@ namespace DR.Sleipner.CacheProviders.DictionaryCache
             {
                 var cachedObject = _cache[cacheKey];
 
-                if(cachedObject.ThrownException != null)
+                if (cachedObject.ThrownException != null && cachedObject.Created.AddSeconds(cachePolicy.ExceptionCacheDuration) > DateTime.Now)
                 {
                     return new CachedObject<TResult>(CachedObjectState.Exception, cachedObject.ThrownException);
+                }
+                else if (cachedObject.ThrownException != null)
+                {
+                    return new CachedObject<TResult>(CachedObjectState.None, null);
                 }
 
                 if (cachedObject.AbsoluteDuration.TotalSeconds > 0 && cachedObject.Created + cachedObject.AbsoluteDuration < DateTime.Now)

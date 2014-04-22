@@ -57,5 +57,4 @@ StyleCop.*
 
 #Build output
 build-output/
-
-
+*.nupkg
