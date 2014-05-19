@@ -45,44 +45,16 @@ namespace DR.Sleipner.EnyimMemcachedProvider.Transcoders
 
             var data = new byte[item.Data.Count];
             Array.Copy(item.Data.Array, item.Data.Offset, data, 0, data.Length);
-            try
+            using (var memoryStream = new MemoryStream(data))
             {
-                using (var memoryStream = new MemoryStream(data))
+                using (var zipStream = new GZipStream(memoryStream, CompressionMode.Decompress))
                 {
-                    using (var zipStream = new GZipStream(memoryStream, CompressionMode.Decompress))
+                    using (var streamReader = new StreamReader(zipStream))
                     {
-                        using (var streamReader = new StreamReader(zipStream))
-                        {
-                            var textReader = new JsonTextReader(streamReader);
-                            try
-                            {
-                                return jsonSerializer.Deserialize(textReader);
-                            }
-                            catch (JsonReaderException)
-                            {
-#if DEBUG
-                                throw;
-#endif
-                                return null;
-                            }
-                            catch (JsonSerializationException)
-                            {
-#if DEBUG
-                                throw;
-#endif
-                                return null;
-                            }
-                        }
+                        var textReader = new JsonTextReader(streamReader);
+                        return jsonSerializer.Deserialize(textReader);
                     }
                 }
-            }
-            catch (InvalidDataException)
-            {
-#if DEBUG
-                throw;
-#endif
-                //If zipstream was invalid
-                return null;
             }
         }
     }
