@@ -135,7 +135,7 @@ namespace DR.Sleipner
             return realInstanceResult;
         }
         
-        private TResult GetRealResult<TResult>(ProxyRequest<T, TResult> proxyRequest)
+        public TResult GetRealResult<TResult>(ProxyRequest<T, TResult> proxyRequest)
         {
             var delegateMethod = GetLateBoundMethod(proxyRequest.Method);
 
