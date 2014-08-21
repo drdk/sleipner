@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
+using System.Text;
 using Enyim.Caching.Memcached;
 using Newtonsoft.Json;
 
@@ -52,7 +53,15 @@ namespace DR.Sleipner.EnyimMemcachedProvider.Transcoders
                     using (var streamReader = new StreamReader(zipStream))
                     {
                         var textReader = new JsonTextReader(streamReader);
-                        return jsonSerializer.Deserialize(textReader);
+                        try
+                        {
+                            return jsonSerializer.Deserialize(textReader);
+                        }
+                        catch (JsonSerializationException)
+                        {
+                            //This exception occurs if whatever is in memcached is impossible to deserialize. It's a tricky case, but we'll have to report back that nothing is in there.
+                            return null;
+                        }
                     }
                 }
             }
