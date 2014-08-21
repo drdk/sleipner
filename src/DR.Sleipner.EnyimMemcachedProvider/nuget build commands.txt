@@ -1,0 +1,2 @@
+nuget pack -Build -Version 1.0.0.x -IncludeReferencedProjects -Properties Configuration=Release
+nuget push sleipner.enyim.1.0.0.x.nupkg
