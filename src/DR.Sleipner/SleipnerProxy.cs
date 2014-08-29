@@ -17,13 +17,8 @@ namespace DR.Sleipner
 {
     public class SleipnerProxy<T> where T : class
     {
-        private readonly T _realInstance;
-        private readonly ICacheProvider<T> _cacheProvider;
         public T Object { get; private set; }
-
-        private readonly IProxyHandler<T> _proxyHandler;
         public readonly ICachePolicyProvider<T> CachePolicyProvider;
-
         internal IList<IConfiguredMethod<T>> ConfiguredMethods = new List<IConfiguredMethod<T>>(); 
 
         public SleipnerProxy(T realInstance, ICacheProvider<T> cacheProvider)
@@ -35,39 +30,16 @@ namespace DR.Sleipner
 
             var proxyType = CacheProxyGenerator.GetProxyType<T>();
 
-            _realInstance = realInstance;
-            _cacheProvider = cacheProvider;
+            T realInstance1 = realInstance;
             CachePolicyProvider = new BasicConfigurationProvider<T>();
-            _proxyHandler = new ThrottledProxyHandler<T>(_realInstance, CachePolicyProvider, cacheProvider);
+            IProxyHandler<T> proxyHandler = new ThrottledProxyHandler<T>(realInstance1, CachePolicyProvider, cacheProvider);
             
-            Object = (T)Activator.CreateInstance(proxyType, _realInstance, _proxyHandler);
+            Object = (T)Activator.CreateInstance(proxyType, realInstance1, proxyHandler);
         }
-
+         
         public void Config(Action<ICachePolicyProvider<T>> expression)
         {
             expression(CachePolicyProvider);
-        }
-
-        public TResult Update<TResult>(Expression<Func<T, TResult>> expression)
-        {
-            var methodInfo = SymbolExtensions.GetMethodInfo(expression);
-            var parameters = SymbolExtensions.GetParameter(expression);
-            var proxyExpression = new ProxyRequest<T, TResult>(methodInfo, parameters);
-
-            var realResult = _proxyHandler.GetRealResult(proxyExpression);
-            var cachePolicy = CachePolicyProvider.GetPolicy(proxyExpression.Method, proxyExpression.Parameters);
-
-            if (cachePolicy != null && cachePolicy.CacheDuration > 0)
-            {
-                _cacheProvider.StoreItem(proxyExpression, cachePolicy, realResult);
-            }
-            
-            return realResult;
-        }
-
-        public void Purge<TResult>(Expression<Func<T, TResult>> expression)
-        {
-            _cacheProvider.Purge(expression);
         }
     }
 }

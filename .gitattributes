@@ -1,0 +1,10 @@
+# Set default behaviour, in case users don't have core.autocrlf set.
+text=auto
+
+# Merge defaults
+*.csproj eol=crlf merge=union
+*.sln eol=crlf merge=union
+*.cs eol=crlf
+*.json eol=crlf
+*.cshtml eol=crlf
+*.config eol=crlf
