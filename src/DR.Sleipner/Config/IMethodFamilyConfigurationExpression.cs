@@ -41,5 +41,11 @@ namespace DR.Sleipner.Config
         /// </summary>
         /// <returns></returns>
         IMethodFamilyConfigurationExpression BubbleExceptionsWhenStale();
+
+        /// <summary>
+        /// This is used to set a cachepool name.
+        /// </summary>
+        /// <returns></returns>
+        IMethodFamilyConfigurationExpression CachePool(string name);
     }
 }

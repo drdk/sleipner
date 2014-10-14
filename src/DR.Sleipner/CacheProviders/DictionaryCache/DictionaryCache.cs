@@ -60,7 +60,7 @@ namespace DR.Sleipner.CacheProviders.DictionaryCache
             _cache[cacheKey] = new DictionaryCachedItem(exception, duration, absoluteDuration);
         }
 
-        public void Purge<TResult>(Expression<Func<T, TResult>> expression)
+        public void Purge<TResult>(Expression<Func<T, TResult>> expression, string cachePool)
         {
             var methodInfo = SymbolExtensions.GetMethodInfo(expression);
             var parameters = SymbolExtensions.GetParameter(expression);
@@ -80,7 +80,7 @@ namespace DR.Sleipner.CacheProviders.DictionaryCache
             _cache.Clear();
         }
 
-        public bool TryGetRaw<TResult>(ProxyRequest<T, TResult> proxyRequest, out object result)
+        public bool TryGetRaw<TResult>(ProxyRequest<T, TResult> proxyRequest, out object result, string cachePool)
         {
             var cacheKey = new DictionaryCacheKey(proxyRequest.Method, proxyRequest.Parameters);
             if (_cache.ContainsKey(cacheKey))
