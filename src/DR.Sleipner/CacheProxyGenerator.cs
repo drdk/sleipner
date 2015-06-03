@@ -19,30 +19,30 @@ namespace DR.Sleipner
 
         public static T GetProxy<T>(T realInstance, ICacheProvider<T> cacheProvider) where T : class
         {
-            lock (CreateProxyLock)
-            {
-                var proxy = GetProxyType<T>();
-                return (T)Activator.CreateInstance(proxy, realInstance, cacheProvider);
-            }
+            var proxy = GetProxyType<T>();
+            return (T) Activator.CreateInstance(proxy, realInstance, cacheProvider);
         }
 
         public static Type GetProxyType<T>() where T : class
         {
-            var interfaceType = typeof(T);
-
-            if (!interfaceType.IsInterface)
+            lock (CreateProxyLock)
             {
-                throw new ProxyTypeMustBeInterfaceException();
-            }
+                var interfaceType = typeof (T);
 
-            Type proxyType;
-            if(!ProxyCache.TryGetValue(interfaceType, out proxyType))
-            {
-                proxyType = ProxyGenerator.CreateProxy<T>();
-                ProxyCache[interfaceType] = proxyType;
-            }
+                if (!interfaceType.IsInterface)
+                {
+                    throw new ProxyTypeMustBeInterfaceException();
+                }
 
-            return proxyType;
+                Type proxyType;
+                if (!ProxyCache.TryGetValue(interfaceType, out proxyType))
+                {
+                    proxyType = ProxyGenerator.CreateProxy<T>();
+                    ProxyCache[interfaceType] = proxyType;
+                }
+
+                return proxyType;
+            }
         }
     }
 }
