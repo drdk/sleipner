@@ -15,10 +15,15 @@ namespace DR.Sleipner
         private static readonly Dictionary<Type, Type> ProxyCache = new Dictionary<Type, Type>();
         private static readonly IProxyGenerator ProxyGenerator = new ILGenProxyGenerator();
 
+        private static readonly object CreateProxyLock = new object();
+
         public static T GetProxy<T>(T realInstance, ICacheProvider<T> cacheProvider) where T : class
         {
-            var proxy = GetProxyType<T>();
-            return (T)Activator.CreateInstance(proxy, realInstance, cacheProvider);
+            lock (CreateProxyLock)
+            {
+                var proxy = GetProxyType<T>();
+                return (T)Activator.CreateInstance(proxy, realInstance, cacheProvider);
+            }
         }
 
         public static Type GetProxyType<T>() where T : class
