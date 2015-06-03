@@ -66,6 +66,7 @@ namespace DR.Sleipner.CacheProxy.Generators
                 
                 if (method.IsGenericMethod)
                 {
+                    throw new ArgumentException("Cannot use generic method");
                     var genericTypes = method.GetGenericArguments();
                     proxyMethod.DefineGenericParameters(genericTypes.Select(a => a.Name).ToArray());
                 }
@@ -93,33 +94,29 @@ namespace DR.Sleipner.CacheProxy.Generators
 
                 /* Load the methodinfo of the current method into a local variable */
 
-                var methodInfoLocal = methodBody.DeclareLocal(typeof (MethodInfo));
-                methodBody.Emit(OpCodes.Ldtoken, typeof(T));                                            //typeof(T)
-                methodBody.Emit(OpCodes.Call, typeof(Type).GetMethod("GetTypeFromHandle"));             //typeof(T) NOTICE USE OF CALL INSTEAD OF CALLVIRT
-                methodBody.Emit(OpCodes.Callvirt, typeof(Type).GetMethod("GetMethods", new Type[0]));   //.GetMethods(new Type[0])
-                methodBody.Emit(OpCodes.Ldc_I4, methodIndex);                                           //Read Array Index x
-                methodBody.Emit(OpCodes.Ldelem, typeof(MethodInfo));                                    //As an methodinfo
-                if (method.IsGenericMethod)
+                var methodInfoLocal = methodBody.DeclareLocal(typeof(MethodInfo));
+                var methodParameters = method.GetParameters();
+
+                var methodParametersArray = methodBody.DeclareLocal(typeof(Type[]));
+                methodBody.Emit(OpCodes.Ldc_I4, methodParameters.Length);
+                methodBody.Emit(OpCodes.Newarr, typeof(Type));
+                methodBody.Emit(OpCodes.Stloc, methodParametersArray);
+
+                for (var p = 0; p < methodParameters.Length; p++)
                 {
-                    var genericTypes = method.GetGenericArguments();
-                    var genericTypesArray = methodBody.DeclareLocal(typeof (Type[]));
-                    methodBody.Emit(OpCodes.Ldc_I4, genericTypes.Length);
-                    methodBody.Emit(OpCodes.Newarr, typeof(Type));
-                    methodBody.Emit(OpCodes.Stloc, genericTypesArray);
-
-                    for (var i = 0; i < genericTypes.Length; i++)
-                    {
-                        var genericType = genericTypes[i];
-                        methodBody.Emit(OpCodes.Ldloc, genericTypesArray);
-                        methodBody.Emit(OpCodes.Ldc_I4, i);
-                        methodBody.Emit(OpCodes.Ldtoken, genericType);
-                        methodBody.Emit(OpCodes.Call, typeof(Type).GetMethod("GetTypeFromHandle"));
-                        methodBody.Emit(OpCodes.Stelem_Ref);
-                    }
-
-                    methodBody.Emit(OpCodes.Ldloc, genericTypesArray);
-                    methodBody.Emit(OpCodes.Callvirt, typeof(MethodInfo).GetMethod("MakeGenericMethod"));
+                    var currentParameter = methodParameters[p];
+                    methodBody.Emit(OpCodes.Ldloc, methodParametersArray);
+                    methodBody.Emit(OpCodes.Ldc_I4, p);
+                    methodBody.Emit(OpCodes.Ldtoken, currentParameter.ParameterType);
+                    methodBody.Emit(OpCodes.Call, typeof(Type).GetMethod("GetTypeFromHandle"));
+                    methodBody.Emit(OpCodes.Stelem_Ref);
                 }
+
+                methodBody.Emit(OpCodes.Ldtoken, interfaceType);
+                methodBody.Emit(OpCodes.Call, typeof(Type).GetMethod("GetTypeFromHandle"));
+                methodBody.Emit(OpCodes.Ldstr, method.Name);
+                methodBody.Emit(OpCodes.Ldloc, methodParametersArray);
+                methodBody.Emit(OpCodes.Callvirt, typeof(Type).GetMethod("GetMethod", new[] { typeof(string), typeof(Type[]) }));
                 methodBody.Emit(OpCodes.Stloc, methodInfoLocal);                                    //And store it
                 
                 /* The below code creates an array that contains all the values
